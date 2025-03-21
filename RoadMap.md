@@ -53,11 +53,11 @@ AutoCommit is a binary application designed to replace the standard `git commit 
   - [x] Implement model availability checks
   - [x] Create proper tests for Ollama integration
 
-- [ ] **3.2 LlamaIndex Configuration**
-  - [ ] Set up LlamaIndex for efficient querying
-  - [ ] Configure document structure for git diffs
-  - [ ] Create indexing utilities for git changes
-  - [ ] Test indexing performance
+- [x] **3.2 LlamaIndex Configuration**
+  - [x] Set up LlamaIndex for efficient querying
+  - [x] Configure document structure for git diffs
+  - [x] Create indexing utilities for git changes
+  - [x] Test indexing performance
 
 - [ ] **3.3 Prompt Engineering**
   - [ ] Design effective prompts for commit message generation
