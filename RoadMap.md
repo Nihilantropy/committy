@@ -40,11 +40,11 @@ AutoCommit is a binary application designed to replace the standard `git commit 
   - [x] Create architecture diagram
   - [x] Define module interfaces
 
-- [ ] **2.3 LLM Selection & Configuration**
-  - [ ] Research appropriate models available in Ollama
-  - [ ] Test and benchmark model performance for commit tasks
-  - [ ] Select the best model balancing quality vs. performance
-  - [ ] Document the chosen model specifications
+- [x] **2.3 LLM Selection & Configuration**
+  - [x] Research appropriate models available in Ollama
+  - [x] Select default model and environment variable approach
+  - [x] Design universal parameter template
+  - [x] Document the configuration system
 
 ### Phase 3: Local LLM Integration
 - [ ] **3.1 Ollama Setup**
