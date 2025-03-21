@@ -59,11 +59,11 @@ AutoCommit is a binary application designed to replace the standard `git commit 
   - [x] Create indexing utilities for git changes
   - [x] Test indexing performance
 
-- [ ] **3.3 Prompt Engineering**
-  - [ ] Design effective prompts for commit message generation
-  - [ ] Create templates for different commit types
-  - [ ] Test prompt performance and refine
-  - [ ] Document prompt strategies
+- [x] **3.3 Prompt Engineering**
+  - [x] Design effective prompts for commit message generation
+  - [x] Create templates for different commit types
+  - [x] Test prompt performance and refine
+  - [x] Document prompt strategies
 
 ### Phase 4: Core Functionality Implementation
 - [ ] **4.1 Git Integration**

@@ -1,0 +1,98 @@
+diff --git a/src/components/UserDashboard.js b/src/components/UserDashboard.js
+new file mode 100644
+index 0000000..a7c42ef
+--- /dev/null
++++ b/src/components/UserDashboard.js
+@@ -0,0 +1,45 @@
++import React, { useState, useEffect } from 'react';
++import { fetchUserStats } from '../api/users';
++import StatsCard from './StatsCard';
++import ActivityChart from './ActivityChart';
++
++/**
++ * UserDashboard component displays user statistics and activity.
++ * 
++ * @param {Object} props - Component props
++ * @param {string} props.userId - User ID to display dashboard for
++ * @param {Object} props.filters - Optional filters for the dashboard data
++ * @returns {JSX.Element} - Dashboard component
++ */
++const UserDashboard = ({ userId, filters = {} }) => {
++  const [stats, setStats] = useState(null);
++  const [loading, setLoading] = useState(true);
++  const [error, setError] = useState(null);
++
++  useEffect(() => {
++    const loadStats = async () => {
++      try {
++        setLoading(true);
++        const data = await fetchUserStats(userId, filters);
++        setStats(data);
++        setError(null);
++      } catch (err) {
++        setError(err.message);
++      } finally {
++        setLoading(false);
++      }
++    };
++
++    loadStats();
++  }, [userId, filters]);
++
++  return (
++    <div className="user-dashboard">
++      <h2>User Dashboard</h2>
++      {loading && <p>Loading dashboard data...</p>}
++      {error && <p className="error">Error: {error}</p>}
++      {stats && <StatsCard stats={stats} />}
++      {stats && <ActivityChart activities={stats.activities} />}
++    </div>
++  );
++};
++
++export default UserDashboard;
+diff --git a/src/api/users.js b/src/api/users.js
+index 8fab3cd..ea74b2d 100644
+--- a/src/api/users.js
++++ b/src/api/users.js
+@@ -25,6 +25,22 @@ export const updateUser = async (userId, userData) => {
+   return response.data;
+ };
+ 
++/**
++ * Fetch user statistics and activity
++ * 
++ * @param {string} userId - User ID to fetch stats for
++ * @param {Object} filters - Optional filters for the stats data
++ * @returns {Promise<Object>} - User statistics and activity data
++ */
++export const fetchUserStats = async (userId, filters = {}) => {
++  const queryParams = new URLSearchParams(filters).toString();
++  const url = `/api/users/${userId}/stats${queryParams ? `?${queryParams}` : ''}`;
++  
++  const response = await apiClient.get(url);
++  
++  return response.data;
++};
++
+ /**
+  * Delete a user
+  * 
+diff --git a/src/components/index.js b/src/components/index.js
+index 5e2cf12..a9b742c 100644
+--- a/src/components/index.js
++++ b/src/components/index.js
+@@ -3,6 +3,7 @@ import Button from './Button';
+ import Card from './Card';
+ import Input from './Input';
+ import Navbar from './Navbar';
++import UserDashboard from './UserDashboard';
+ 
+ export {
+   Avatar,
+@@ -10,4 +11,5 @@ export {
+   Card,
+   Input,
+   Navbar,
++  UserDashboard,
+ };

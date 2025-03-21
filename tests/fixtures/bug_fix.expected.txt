@@ -1,0 +1,12 @@
+fix(auth): improve input validation for auth functions
+
+Add type checking and null handling to prevent validation errors:
+- Check if password is a string before validation
+- Add null checks for login form data
+- Convert token to string before splitting
+- Handle non-string tokens properly
+
+Add test cases to verify the fixes for:
+- Non-string passwords
+- Null form data
+- Non-string tokens

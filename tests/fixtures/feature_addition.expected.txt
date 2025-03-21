@@ -1,0 +1,10 @@
+feat(dashboard): add user dashboard component with stats and activity chart
+
+Implement new UserDashboard component to display user statistics and activity data. 
+Add fetchUserStats API function to retrieve user data with filtering capabilities.
+Export UserDashboard in components index for easier imports.
+
+The dashboard includes:
+- Loading and error state handling
+- Stats card for user metrics
+- Activity chart for visualizing user activity

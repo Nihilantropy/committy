@@ -1,0 +1,81 @@
+diff --git a/src/auth/validation.js b/src/auth/validation.js
+index cdef123..abcd456 100644
+--- a/src/auth/validation.js
++++ b/src/auth/validation.js
+@@ -15,7 +15,7 @@ export const validateEmail = (email) => {
+  * @returns {boolean} True if password meets requirements
+  */
+ export const validatePassword = (password) => {
+-  if (!password || password.length < 8) {
++  if (!password || typeof password !== 'string' || password.length < 8) {
+     return false;
+   }
+   
+@@ -42,7 +42,11 @@ export const validateLoginForm = (data) => {
+   const errors = {};
+   
+   // Validate email
+-  if (!validateEmail(data.email)) {
++  if (!data || !data.email) {
++    errors.email = 'Email is required';
++  }
++  
++  if (data && data.email && !validateEmail(data.email)) {
+     errors.email = 'Please enter a valid email address';
+   }
+   
+@@ -67,7 +71,7 @@ export const validateToken = (token) => {
+     return false;
+   }
+   
+-  const parts = token.split('.');
++  const parts = String(token).split('.');
+   
+   // JWT tokens have 3 parts
+   if (parts.length !== 3) {
+diff --git a/tests/auth/validation.test.js b/tests/auth/validation.test.js
+index fedc876..1234abc 100644
+--- a/tests/auth/validation.test.js
++++ b/tests/auth/validation.test.js
+@@ -25,6 +25,18 @@ describe('validatePassword', () => {
+     expect(validatePassword('short')).toBe(false);
+   });
+   
++  it('should reject non-string passwords', () => {
++    expect(validatePassword(null)).toBe(false);
++    expect(validatePassword(undefined)).toBe(false);
++    expect(validatePassword(123456789)).toBe(false);
++    expect(validatePassword({})).toBe(false);
++  });
++  
++  it('should validate proper passwords', () => {
++    expect(validatePassword('correctpassword')).toBe(true);
++    expect(validatePassword('Password123')).toBe(true);
++  });
++  
+   // ... other password tests
+ });
+ 
+@@ -35,6 +47,11 @@ describe('validateLoginForm', () => {
+     expect(errors.email).toBeDefined();
+   });
+   
++  it('should handle null input data', () => {
++    const errors = validateLoginForm(null);
++    expect(errors.email).toBeDefined();
++  });
++  
+   // ... other form validation tests
+ });
+ 
+@@ -44,4 +61,10 @@ describe('validateToken', () => {
+     expect(validateToken('')).toBe(false);
+   });
+   
++  it('should handle non-string tokens', () => {
++    expect(validateToken(null)).toBe(false);
++    expect(validateToken(undefined)).toBe(false);
++    expect(validateToken(123)).toBe(false);
++  });
++  
+ });
