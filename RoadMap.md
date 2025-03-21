@@ -34,11 +34,11 @@ AutoCommit is a binary application designed to replace the standard `git commit 
   - [x] Explore industry standards for commit messages
   - [x] Document the chosen commit message format
 
-- [ ] **2.2 Application Architecture**
-  - [ ] Design the command-line interface
-  - [ ] Plan the application flow
-  - [ ] Create architecture diagram
-  - [ ] Define module interfaces
+- [x] **2.2 Application Architecture**
+  - [x] Design the command-line interface
+  - [x] Plan the application flow
+  - [x] Create architecture diagram
+  - [x] Define module interfaces
 
 - [ ] **2.3 LLM Selection & Configuration**
   - [ ] Research appropriate models available in Ollama
