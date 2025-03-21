@@ -47,11 +47,11 @@ AutoCommit is a binary application designed to replace the standard `git commit 
   - [x] Document the configuration system
 
 ### Phase 3: Local LLM Integration
-- [ ] **3.1 Ollama Setup**
-  - [ ] Install and configure Ollama
-  - [ ] Download the selected model
-  - [ ] Create a model integration layer
-  - [ ] Test basic model functionality
+- [x] **3.1 Ollama Setup**
+  - [x] Document Ollama installation and configuration
+  - [x] Create client for interacting with Ollama API
+  - [x] Implement model availability checks
+  - [x] Create proper tests for Ollama integration
 
 - [ ] **3.2 LlamaIndex Configuration**
   - [ ] Set up LlamaIndex for efficient querying
