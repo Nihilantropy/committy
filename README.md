@@ -45,7 +45,7 @@ AutoCommit:
 
 - Python 3.10+
 - Git
-- Ollama (will be installed automatically if not present)
+- Ollama
 - Minimum 8GB RAM recommended for LLM operation
 
 ## Configuration
