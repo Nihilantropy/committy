@@ -29,10 +29,10 @@ AutoCommit is a binary application designed to replace the standard `git commit 
   - [x] Create this RoadMap.md file
 
 ### Phase 2: Research & Design
-- [ ] **2.1 Commit Message Best Practices**
-  - [ ] Research conventional commits specification
-  - [ ] Explore industry standards for commit messages
-  - [ ] Document the chosen commit message format
+- [x] **2.1 Commit Message Best Practices**
+  - [x] Research conventional commits specification
+  - [x] Explore industry standards for commit messages
+  - [x] Document the chosen commit message format
 
 - [ ] **2.2 Application Architecture**
   - [ ] Design the command-line interface
