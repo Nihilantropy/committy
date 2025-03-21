@@ -23,10 +23,10 @@ AutoCommit is a binary application designed to replace the standard `git commit 
   - [x] Initialize git repository
   - [x] Add .gitignore for Python projects
 
-- [ ] **1.3 Documentation Setup**
-  - [ ] Create README.md with project overview
-  - [ ] Establish documentation standards
-  - [ ] Create this RoadMap.md file
+- [x] **1.3 Documentation Setup**
+  - [x] Create README.md with project overview
+  - [x] Establish documentation standards
+  - [x] Create this RoadMap.md file
 
 ### Phase 2: Research & Design
 - [ ] **2.1 Commit Message Best Practices**
