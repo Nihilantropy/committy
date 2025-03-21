@@ -2,6 +2,7 @@
 
 import os
 import pytest
+import requests
 from unittest.mock import patch, MagicMock
 
 from autocommit.llm.ollama import OllamaClient, get_default_model_config
@@ -44,7 +45,7 @@ class TestOllamaClient:
 
     def test_is_running_false_connection_error(self):
         """Test is_running when connection fails."""
-        with patch("requests.get", side_effect=ConnectionError()) as mock_get:
+        with patch("requests.get", side_effect=requests.exceptions.ConnectionError()) as mock_get:
             client = OllamaClient()
             result = client.is_running()
             
@@ -78,7 +79,7 @@ class TestOllamaClient:
     def test_list_models_service_not_running(self):
         """Test list_models when service is not running."""
         # Mock response for is_running check
-        with patch("requests.get", side_effect=ConnectionError()):
+        with patch.object(OllamaClient, "is_running", return_value=False):
             client = OllamaClient()
             models = client.list_models()
             

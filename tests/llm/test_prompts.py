@@ -159,12 +159,12 @@ class TestChangeTypeDetection:
         context = """
         # Git Diff Summary
         Total Files Changed: 1
-        Total Additions: 2
-        Total Deletions: 2
+        Total Additions: 1
+        Total Deletions: 1
         
-        # File: src/config.js
-        - Changed settings
-        - Updated values
+        # File: unknown.txt
+        - One line removed
+        + One line added
         """
         
         change_type = detect_likely_change_type(context)

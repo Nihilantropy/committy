@@ -47,14 +47,14 @@ index 0000000..1234567
         
         assert len(git_diff.files) == 2
         assert git_diff.summary.total_files == 2
-        assert git_diff.summary.total_additions == 3
+        assert git_diff.summary.total_additions == 4
         assert git_diff.summary.total_deletions == 1
         
         # Check first file
         file1 = git_diff.files[0]
         assert file1.path == "file1.py"
         assert file1.change_type == "modified"
-        assert file1.additions == 1
+        assert file1.additions == 2
         assert file1.deletions == 1
         assert file1.language == "Python"
         assert "@@ -1,3 +1,4 @@" in file1.diff_content

@@ -28,11 +28,12 @@ def parse_diff(diff_text: str) -> GitDiff:
     Returns:
         GitDiff object containing parsed information
     """
+    git_diff = GitDiff()
+    
     if not diff_text or not diff_text.strip():
         logger.warning("Empty diff text provided")
-        return GitDiff()
-    
-    git_diff = GitDiff()
+        git_diff.calculate_summary()
+        return git_diff
     
     # Split diff into sections for each file
     file_sections = split_diff_by_file(diff_text)

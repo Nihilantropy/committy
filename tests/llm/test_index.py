@@ -1,6 +1,7 @@
 """Tests for the LlamaIndex integration."""
 
 import pytest
+import os
 from unittest.mock import MagicMock, patch
 
 from llama_index.core import Document, VectorStoreIndex
@@ -138,23 +139,26 @@ class TestDiffIndexer:
         
         assert document is None
     
-    @patch("llama_index.core.VectorStoreIndex")
-    def test_create_index(self, mock_index):
+    def test_create_index(self):
         """Test creating an index from documents."""
-        # Setup mock
-        mock_index.return_value = MagicMock(spec=VectorStoreIndex)
-        
         # Create test documents
         doc1 = Document(text="Test document 1", metadata={"type": "summary"})
         doc2 = Document(text="Test document 2", metadata={"type": "file"})
         
-        # Create indexer and call method
+        # Create indexer
         indexer = DiffIndexer()
-        result = indexer.create_index([doc1, doc2])
         
-        # Check that index was created
-        assert result is not None
-        assert mock_index.called
+        # Use context manager for patching
+        with patch("autocommit.llm.index.VectorStoreIndex") as mock_index:
+            mock_instance = MagicMock()
+            mock_index.return_value = mock_instance
+            
+            # Call the method
+            result = indexer.create_index([doc1, doc2])
+            
+            # Check that index was created
+            assert result is not None
+            assert mock_index.called
     
     def test_format_nodes_for_context(self):
         """Test formatting nodes into context text."""
@@ -162,6 +166,7 @@ class TestDiffIndexer:
         node1 = NodeWithScore(
             node=IndexNode(
                 text="Summary text",
+                index_id="test-id",
                 metadata={"type": "summary"}
             ),
             score=0.9
@@ -169,6 +174,7 @@ class TestDiffIndexer:
         node2 = NodeWithScore(
             node=IndexNode(
                 text="File content 1",
+                index_id="test-id",
                 metadata={"type": "file", "path": "file1.py"}
             ),
             score=0.8
@@ -176,6 +182,7 @@ class TestDiffIndexer:
         node3 = NodeWithScore(
             node=IndexNode(
                 text="File content 2",
+                index_id="test-id",
                 metadata={"type": "file", "path": "file2.py"}
             ),
             score=0.7
@@ -196,6 +203,7 @@ class TestDiffIndexer:
         node1 = NodeWithScore(
             node=IndexNode(
                 text="Summary text",
+                index_id="test-id",
                 metadata={"type": "summary"}
             ),
             score=0.9
@@ -205,6 +213,7 @@ class TestDiffIndexer:
         node2 = NodeWithScore(
             node=IndexNode(
                 text=long_text,
+                index_id="test-id",
                 metadata={"type": "file", "path": "file1.py"}
             ),
             score=0.8
