@@ -1,9 +1,9 @@
 # Committy!
 
-![GitHub License](https://img.shields.io/github/license/claudio/autocommit)
+![GitHub License](https://img.shields.io/github/license/claudio/committy)
 ![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)
 
-AutoCommit is an AI-powered git commit message generator that automatically creates professional, meaningful commit messages by analyzing your git diffs.
+committy is an AI-powered git commit message generator that automatically creates professional, meaningful commit messages by analyzing your git diffs.
 
 ## Features
 
@@ -19,7 +19,7 @@ AutoCommit is an AI-powered git commit message generator that automatically crea
 
 ```bash
 # Coming soon
-pip install autocommit
+pip install committy
 ```
 
 ## Quick Start
@@ -29,12 +29,12 @@ pip install autocommit
 git add .
 
 # Generate commit message and commit
-autocommit
+committy
 ```
 
 ## How It Works
 
-AutoCommit:
+committy:
 1. Analyzes the staged git diff
 2. Extracts the essential changes
 3. Processes the changes through a locally-hosted LLM via Ollama
@@ -50,14 +50,14 @@ AutoCommit:
 
 ## Configuration
 
-AutoCommit can be customized through a configuration file:
+committy can be customized through a configuration file:
 
 ```bash
 # Generate default config
-autocommit --init-config
+committy --init-config
 
 # Edit config
-nano ~/.config/autocommit/config.yml
+nano ~/.config/committy/config.yml
 ```
 
 ## Development
@@ -66,8 +66,8 @@ nano ~/.config/autocommit/config.yml
 
 ```bash
 # Clone the repository
-git clone https://github.com/claudio/autocommit.git
-cd autocommit
+git clone https://github.com/claudio/committy.git
+cd committy
 
 # Set up virtual environment
 python -m venv venv
