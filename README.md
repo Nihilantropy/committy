@@ -1,4 +1,4 @@
-# AutoCommit
+# Committy!
 
 ![GitHub License](https://img.shields.io/github/license/claudio/autocommit)
 ![Python Version](https://img.shields.io/badge/python-3.10%2B-blue)
