@@ -1,0 +1,132 @@
+.TH COMMITTY 1 "March 2025" "committy 0.1.0" "Committy Manual"
+
+.SH NAME
+committy \- AI-powered git commit message generator
+
+.SH SYNOPSIS
+.B committy
+[\fIOPTIONS\fR]
+
+.SH DESCRIPTION
+.B committy
+is a command-line tool that uses AI to generate high-quality commit messages from your git changes. It analyzes the diff content and produces a formatted message following conventional commits standards.
+
+.SH OPTIONS
+.TP
+.BR \-v ", " \-\-version
+Display version information and exit.
+
+.TP
+.BR \-d ", " \-\-dry\-run
+Generate a commit message without actually committing. This is useful for previewing what the commit message would look like.
+
+.TP
+.BR \-f ", " \-\-format=\fIFORMAT\fR
+Specify commit message format. Available formats: conventional, angular, simple. Default is conventional.
+
+.TP
+.BR \-m ", " \-\-model=\fIMODEL\fR
+Specify the LLM model to use. If not provided, uses the model specified in the configuration file or the default (gemma3:12b).
+
+.TP
+.BR \-e ", " \-\-edit
+Open the generated message in an editor before committing. This allows you to make manual adjustments to the message.
+
+.TP
+.BR \-c ", " \-\-config=\fIFILE\fR
+Specify a configuration file location. If not provided, uses the default location (~/.config/committy/config.yml).
+
+.TP
+.BR \-\-init\-config
+Generate a default configuration file at the default location or the location specified with --config.
+
+.TP
+.BR \-\-verbose
+Increase output verbosity. Can be used multiple times for even more verbosity.
+
+.TP
+.BR \-\-no\-confirm
+Skip the confirmation step and commit directly.
+
+.TP
+.BR \-\-with\-scope
+Force inclusion of scope in commit message.
+
+.TP
+.BR \-\-max\-tokens=\fINUMBER\fR
+Limit the LLM output token count.
+
+.TP
+.BR \-\-analyze
+Analyze changes without generating a commit message.
+
+.TP
+.BR \-\-no\-color
+Disable colored output.
+
+.SH EXAMPLES
+.TP
+Basic usage:
+.B committy
+.TP
+Preview commit message without actually committing:
+.B committy --dry-run
+.TP
+Use a different LLM model:
+.B committy --model=phi3:mini
+.TP
+Use a different format:
+.B committy --format=simple
+.TP
+Create a default configuration file:
+.B committy --init-config
+.TP
+Analyze changes without committing:
+.B committy --analyze
+
+.SH CONFIGURATION
+Committy uses a configuration file located at ~/.config/committy/config.yml. You can generate a default configuration file with \fB--init-config\fR.
+
+Configuration can also be set using environment variables:
+
+.TP
+.BR COMMITTY_MODEL ", " OLLAMA_MODEL
+Set the model to use.
+
+.TP
+.BR COMMITTY_FORMAT
+Set the commit message format.
+
+.TP
+.BR COMMITTY_MAX_TOKENS
+Set the maximum number of tokens for LLM output.
+
+.TP
+.BR COMMITTY_TEMP ", " AUTOCOMMIT_TEMP
+Set the temperature for LLM generation.
+
+.TP
+.BR EDITOR
+Set the editor to use for editing commit messages.
+
+.SH DEPENDENCIES
+.TP
+.BR git
+Git version control system.
+
+.TP
+.BR ollama
+Local LLM runtime for text generation.
+
+.SH SEE ALSO
+.BR git (1),
+.BR git-commit (1)
+
+.SH AUTHOR
+Written by Claudio.
+
+.SH REPORTING BUGS
+Report bugs to <https://github.com/claudio/committy/issues>.
+
+.SH COPYRIGHT
+Copyright \(co 2025 Claudio. License MIT.

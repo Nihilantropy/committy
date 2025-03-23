@@ -1,7 +1,7 @@
-# AutoCommit Project RoadMap
+# Committy Project RoadMap
 
 ## Project Overview
-AutoCommit is a binary application designed to replace the standard `git commit -m ""` command with an AI-powered solution that generates high-quality, professional commit messages automatically. The application will analyze git diffs and use a locally-hosted LLM through Ollama and LlamaIndex to ensure privacy and zero cost.
+Committy is a binary application designed to replace the standard `git commit -m ""` command with an AI-powered solution that generates high-quality, professional commit messages automatically. The application analyzes git diffs and uses a locally-hosted LLM through Ollama and LlamaIndex to ensure privacy and zero cost.
 
 ## Project Goals
 - Create a seamless command-line tool that integrates with existing git workflows
@@ -66,28 +66,32 @@ AutoCommit is a binary application designed to replace the standard `git commit 
   - [x] Document prompt strategies
 
 ### Phase 4: Core Functionality Implementation
-- [ ] **4.1 Git Integration**
-  - [ ] Implement git diff parsing
-  - [ ] Create utilities to extract changed files
-  - [ ] Build functions to analyze code changes
-  - [ ] Test git integration
+- [x] **4.1 Git Integration**
+  - [x] Implement git diff parsing
+  - [x] Create utilities to extract changed files
+  - [x] Build functions to analyze code changes
+  - [x] Test git integration
 
-- [ ] **4.2 Commit Message Generation**
-  - [ ] Develop the core AI prompt pipeline
-  - [ ] Create message formatting utilities
-  - [ ] Implement fallback strategies
-  - [ ] Test message quality
+- [x] **4.2 Commit Message Generation**
+  - [x] Develop the core AI prompt pipeline
+  - [x] Create message formatting utilities
+  - [x] Implement fallback strategies
+  - [x] Test message quality
 
-- [ ] **4.3 Command-Line Interface**
-  - [ ] Build CLI using argparse or click
-  - [ ] Implement command arguments and options
-  - [ ] Create helpful error messages
-  - [ ] Add verbose and debug modes
+- [x] **4.3 Command-Line Interface**
+  - [x] Build CLI using argparse
+  - [x] Implement command arguments and options
+  - [x] Create helpful error messages
+  - [x] Add verbose and debug modes
+  - [x] Polish user interaction experience
+  - [x] Implement colored output
+  - [x] Add bash completion script
+  - [x] Create man page documentation
 
 - [ ] **4.4 Configuration System**
-  - [ ] Create a configuration file format
-  - [ ] Implement user preference storage
-  - [ ] Add model configuration options
+  - [x] Create a configuration file format
+  - [x] Implement user preference storage
+  - [x] Add model configuration options
   - [ ] Create profile support for different projects
 
 ### Phase 5: Binary Creation

@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+"""
+Committy CLI shortcut script.
+
+This script can be installed globally for easier access to the committy command.
+"""
+
+import sys
+from committy.cli.main import main
+
+if __name__ == "__main__":
+    sys.exit(main())
