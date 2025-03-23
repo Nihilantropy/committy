@@ -2,7 +2,7 @@
 
 import pytest
 
-from autocommit.git.language import detect_language, analyze_path_for_context
+from committy.git.language import detect_language, analyze_path_for_context
 
 
 class TestLanguageDetection:

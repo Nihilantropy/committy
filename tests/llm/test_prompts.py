@@ -1,7 +1,7 @@
 """Tests for prompt templates."""
 
 import pytest
-from autocommit.llm.prompts import (
+from committy.llm.prompts import (
     get_prompt_for_diff,
     detect_likely_change_type,
     enhance_commit_message,

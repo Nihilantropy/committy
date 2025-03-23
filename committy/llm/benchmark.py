@@ -9,10 +9,10 @@ import json
 import os
 from typing import Dict, List, Optional, Any, Union, Tuple
 
-from autocommit.git.parser import parse_diff
-from autocommit.llm.index import build_prompt_from_diff
-from autocommit.llm.ollama import OllamaClient, get_default_model_config
-from autocommit.llm.prompts import (
+from committy.git.parser import parse_diff
+from committy.llm.index import build_prompt_from_diff
+from committy.llm.ollama import OllamaClient, get_default_model_config
+from committy.llm.prompts import (
     get_prompt_for_diff,
     detect_likely_change_type,
     enhance_commit_message

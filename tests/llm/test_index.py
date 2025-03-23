@@ -7,8 +7,7 @@ from unittest.mock import MagicMock, patch
 from llama_index.core import Document, VectorStoreIndex
 from llama_index.core.schema import IndexNode, NodeWithScore
 
-from autocommit.llm.index import DiffIndexer, build_prompt_from_diff
-
+from committy.llm.index import DiffIndexer, build_prompt_from_diff
 
 class TestDiffIndexer:
     """Tests for the DiffIndexer class."""

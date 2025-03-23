@@ -5,8 +5,7 @@ import pytest
 import requests
 from unittest.mock import patch, MagicMock
 
-from autocommit.llm.ollama import OllamaClient, get_default_model_config
-
+from committy.llm.ollama import OllamaClient, get_default_model_config
 
 class TestOllamaClient:
     """Tests for the OllamaClient class."""

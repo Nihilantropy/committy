@@ -2,7 +2,7 @@
 
 import pytest
 
-from autocommit.git.parser import (
+from committy.git.parser import (
     parse_diff,
     split_diff_by_file,
     parse_file_section,

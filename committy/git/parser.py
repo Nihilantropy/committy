@@ -5,8 +5,8 @@ import os
 import re
 from typing import Dict, List, Optional, Tuple
 
-from autocommit.git.models import FileChange, GitDiff
-from autocommit.git.language import detect_language
+from committy.git.models import FileChange, GitDiff
+from committy.git.language import detect_language
 
 # Configure logger
 logger = logging.getLogger(__name__)
