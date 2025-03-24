@@ -11,7 +11,7 @@ Committy is a binary application designed to replace the standard `git commit -m
 
 ## Development Roadmap
 
-### Phase 1: Project Setup
+### Phase 1: Project Setup - COMPLETED
 - [x] **1.1 Development Environment**
   - [x] Set up Python environment with virtual environment
   - [x] Install necessary development packages
@@ -28,7 +28,7 @@ Committy is a binary application designed to replace the standard `git commit -m
   - [x] Establish documentation standards
   - [x] Create this RoadMap.md file
 
-### Phase 2: Research & Design
+### Phase 2: Research & Design - COMPLETED
 - [x] **2.1 Commit Message Best Practices**
   - [x] Research conventional commits specification
   - [x] Explore industry standards for commit messages
@@ -46,7 +46,7 @@ Committy is a binary application designed to replace the standard `git commit -m
   - [x] Design universal parameter template
   - [x] Document the configuration system
 
-### Phase 3: Local LLM Integration
+### Phase 3: Local LLM Integration - COMPLETED
 - [x] **3.1 Ollama Setup**
   - [x] Document Ollama installation and configuration
   - [x] Create client for interacting with Ollama API
@@ -65,7 +65,7 @@ Committy is a binary application designed to replace the standard `git commit -m
   - [x] Test prompt performance and refine
   - [x] Document prompt strategies
 
-### Phase 4: Core Functionality Implementation
+### Phase 4: Core Functionality Implementation - COMPLETED
 - [x] **4.1 Git Integration**
   - [x] Implement git diff parsing
   - [x] Create utilities to extract changed files
@@ -88,48 +88,49 @@ Committy is a binary application designed to replace the standard `git commit -m
   - [x] Add bash completion script
   - [x] Create man page documentation
 
-- [ ] **4.4 Configuration System**
+- [x] **4.4 Configuration System**
   - [x] Create a configuration file format
   - [x] Implement user preference storage
   - [x] Add model configuration options
-  - [ ] Create profile support for different projects
 
-### Phase 5: Binary Creation
-- [ ] **5.1 Application Packaging**
+### Phase 5: Comprehensive Testing
+- [ ] **5.1 Test Suite Development**
+  - [ ] Create comprehensive unit tests for all components
+  - [ ] Build integration tests for git workflows
+  - [ ] Create test fixtures for various change types
+  - [ ] Implement end-to-end tests for full application workflow
+
+- [ ] **5.2 Quality Assurance**
+  - [ ] Test with various real-world git changes
+  - [ ] Run performance testing with different models and git repositories
+  - [ ] Conduct usability testing with different users
+  - [ ] Document test results and findings
+
+- [ ] **5.3 Refinement Cycle**
+  - [ ] Analyze test results
+  - [ ] Refine prompts based on performance
+  - [ ] Optimize LLM configuration
+  - [ ] Fix any issues identified during testing
+  - [ ] Document refinement process and improvements
+
+### Phase 6: Binary Creation & Installation
+- [ ] **6.1 Application Packaging**
   - [ ] Set up PyInstaller or similar tool
   - [ ] Create packaging scripts
   - [ ] Test packaging process
   - [ ] Optimize binary size
 
-- [ ] **5.2 Installation Process**
+- [ ] **6.2 Installation Process**
   - [ ] Create installation scripts for Linux/Ubuntu
   - [ ] Implement PATH integration
   - [ ] Add git alias configuration
   - [ ] Test installation process
 
-- [ ] **5.3 Cross-platform Testing**
+- [ ] **6.3 Cross-platform Testing**
   - [ ] Test on different Ubuntu versions
   - [ ] Validate dependencies
   - [ ] Document system requirements
-
-### Phase 6: Testing & Refinement
-- [ ] **6.1 Test Suite Development**
-  - [ ] Create unit tests for core components
-  - [ ] Build integration tests for git workflows
-  - [ ] Create test fixtures for various change types
-  - [ ] Implement performance benchmarks
-
-- [ ] **6.2 Quality Assurance**
-  - [ ] Test with various real-world git changes
-  - [ ] Run performance testing
-  - [ ] Conduct usability testing
-  - [ ] Document test results
-
-- [ ] **6.3 Refinement Cycle**
-  - [ ] Analyze test results
-  - [ ] Refine prompts based on performance
-  - [ ] Optimize LLM configuration
-  - [ ] Document refinement process
+  - [ ] Ensure installation process works across platforms
 
 ### Phase 7: Documentation & Deployment
 - [ ] **7.1 User Documentation**
@@ -174,10 +175,11 @@ Committy is a binary application designed to replace the standard `git commit -m
 - Installation process is straightforward
 - The tool integrates seamlessly with existing git workflows
 
-## Timeline
-- Phase 1-2: 1 week
-- Phase 3-4: 2 weeks
-- Phase 5-6: 1 week
-- Phase 7-8: 1 week
+## Updated Timeline
+- Phase 1-4: Completed
+- Phase 5: 2 weeks
+- Phase 6: 1 week
+- Phase 7: 1 week
+- Phase 8: Ongoing
 
-Total estimated development time: 5 weeks
+Total estimated development time remaining: 4 weeks
