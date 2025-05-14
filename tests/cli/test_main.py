@@ -54,6 +54,9 @@ class TestCliMain:
             "--verbose",
             "--no-confirm",
             "--with-scope",
+            "--no-color",
+            "--init-config",
+            "--show-config",
             "--max-tokens=123",
             "--analyze"
         ])
@@ -109,9 +112,9 @@ class TestCliMain:
         mock_basicConfig.assert_called_once()
         
         # Check logger levels
-        assert logging.getLogger("urllib3").level == logging.WARNING
-        assert logging.getLogger("requests").level == logging.WARNING
-        assert logging.getLogger("llama_index").level == logging.WARNING
+        assert logging.getLogger("urllib3").level == logging.ERROR
+        assert logging.getLogger("requests").level == logging.ERROR
+        assert logging.getLogger("llama_index").level == logging.ERROR
         
         # Reset mock
         mock_basicConfig.reset_mock()
@@ -119,10 +122,10 @@ class TestCliMain:
         # Test with verbosity level 1
         setup_logging(1)
         
-        # Check logger levels
-        assert logging.getLogger("urllib3").level == logging.INFO
-        assert logging.getLogger("requests").level == logging.INFO
-        assert logging.getLogger("llama_index").level == logging.INFO
+        # Check logger levels - updated expectations
+        assert logging.getLogger("urllib3").level == logging.WARNING  # Changed from INFO
+        assert logging.getLogger("requests").level == logging.WARNING  # Changed from INFO
+        assert logging.getLogger("llama_index").level == logging.WARNING  # Changed from INFO
         
         # Reset mock
         mock_basicConfig.reset_mock()

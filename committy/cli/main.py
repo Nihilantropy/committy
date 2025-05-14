@@ -38,29 +38,25 @@ console = Console(theme=custom_theme)
 
 
 def setup_logging(verbosity: int = 0):
-    """Set up logging configuration.
-    
-    Args:
-        verbosity: Verbosity level (0=INFO, 1=DEBUG, 2=DEBUG+verbose libs)
-    """
+    """Set up logging configuration."""
     # Determine log level based on verbosity
     if verbosity >= 2:
         log_level = logging.DEBUG
         lib_log_level = logging.DEBUG
     elif verbosity >= 1:
         log_level = logging.DEBUG
-        lib_log_level = logging.INFO
+        lib_log_level = logging.WARNING  # Higher threshold for libraries
     else:
         log_level = logging.INFO
-        lib_log_level = logging.WARNING
+        lib_log_level = logging.ERROR    # Only critical library errors in normal mode
     
-    # Configure root logger with rich handler
+    # Configure root logger
     logging.basicConfig(
         level=log_level,
         format="%(message)s",
         datefmt="[%X]",
         handlers=[RichHandler(
-            rich_tracebacks=True,
+            rich_tracebacks=verbosity >= 1,  # Only show tracebacks in verbose mode
             tracebacks_show_locals=verbosity >= 2,
             show_time=False,
             show_path=verbosity >= 1,
@@ -71,8 +67,8 @@ def setup_logging(verbosity: int = 0):
     logging.getLogger("urllib3").setLevel(lib_log_level)
     logging.getLogger("requests").setLevel(lib_log_level)
     logging.getLogger("llama_index").setLevel(lib_log_level)
-    
-    logger.debug(f"Logging initialized with verbosity level {verbosity}")
+    logging.getLogger("huggingface_hub").setLevel(lib_log_level)
+    logging.getLogger("sentence_transformers").setLevel(lib_log_level)
 
 
 def parse_args(args: List[str]) -> Dict[str, Any]:
