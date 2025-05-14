@@ -148,7 +148,7 @@ class TestDiffIndexer:
         indexer = DiffIndexer()
         
         # Use context manager for patching
-        with patch("autocommit.llm.index.VectorStoreIndex") as mock_index:
+        with patch("committy.llm.index.VectorStoreIndex") as mock_index:
             mock_instance = MagicMock()
             mock_index.return_value = mock_instance
             
@@ -227,7 +227,7 @@ class TestDiffIndexer:
         assert len(result) < 500  # Should be truncated
 
 
-@patch('autocommit.llm.index.DiffIndexer')
+@patch('committy.llm.index.DiffIndexer')
 def test_build_prompt_from_diff(mock_indexer_class):
     """Test building a prompt from diff data."""
     # Setup mocks

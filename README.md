@@ -48,6 +48,12 @@ pip install -r requirements-dev.txt
 ln -s "$(pwd)/scripts/committy" ~/.local/bin/committy
 ```
 
+## Activate venv
+
+```bash
+. venv/bin/activate
+```
+
 ## Quick Start
 
 ```bash

@@ -15,6 +15,7 @@ from rich.panel import Panel
 from rich.syntax import Syntax
 from rich.theme import Theme
 from rich.progress import Progress, SpinnerColumn, TextColumn, BarColumn, TimeElapsedColumn
+from rich.table import Table
 
 from committy.core.engine import process_diff, Engine
 from committy.utils.config import load_config, get_default_config_path, create_default_config
@@ -143,6 +144,10 @@ def parse_args(args: List[str]) -> Dict[str, Any]:
         "--no-color", action="store_true",
         help="Disable colored output"
     )
+    parser.add_argument(
+        "--show-config", action="store_true",
+        help="Display active configuration values"
+    )
     
     # Parse arguments
     parsed_args = parser.parse_args(args)
@@ -156,6 +161,36 @@ def display_version():
     console.print(f"[header]Committy[/] [bold]v{__version__}[/]")
     console.print("AI-powered git commit message generator")
     console.print("https://github.com/claudio/committy")
+
+
+def display_active_configuration(config: Dict[str, Any]):
+    """Display the active configuration values.
+    
+    Args:
+        config: Configuration dictionary
+    """
+    console.print("\n[bold]Active Configuration:[/]")
+    
+    # Create a table for better presentation
+    table = Table(title="Configuration Values")
+    
+    table.add_column("Option", style="cyan")
+    table.add_column("Value", style="green")
+    
+    # Add rows for each config value
+    for key, value in sorted(config.items()):
+        # Format value for display
+        if isinstance(value, bool):
+            value_str = str(value).lower()
+        elif isinstance(value, (dict, list)):
+            # For complex values, use a simplified representation
+            value_str = f"{type(value).__name__} with {len(value)} items"
+        else:
+            value_str = str(value)
+            
+        table.add_row(key, value_str)
+    
+    console.print(table)
 
 
 def display_diff_analysis(diff_text: str):
@@ -355,9 +390,26 @@ def handle_command(parsed_args: Dict[str, Any]) -> int:
             console.print(f"[error]Failed to create configuration at: {config_path}[/]")
             return 1
     
+    # Load configuration
+    config_path = parsed_args.get("config")
+    config = load_config(config_path)
+    
+    # Show configuration if explicitly requested or in verbose mode
+    if parsed_args.get("show_config") or parsed_args.get("verbose", 0) >= 1:
+        display_active_configuration(config)
+        
+        # If only showing config, return success
+        if parsed_args.get("show_config") and not any([
+            parsed_args.get("version"),
+            parsed_args.get("init_config"),
+            parsed_args.get("analyze"),
+            parsed_args.get("dry_run")
+        ]):
+            return 0
+    
     # Process git diff and generate commit message
     try:
-        # Create engine options
+        # Extract options
         options = {
             "diff_text": None,  # Will be obtained from git
             "change_type": None,  # Will be detected

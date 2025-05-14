@@ -96,7 +96,11 @@ def save_config(config: Dict[str, Any], config_path: Optional[str] = None) -> bo
         config_path = get_default_config_path()
     
     # Ensure directory exists
-    os.makedirs(os.path.dirname(config_path), exist_ok=True)
+    try:
+        os.makedirs(os.path.dirname(config_path), exist_ok=True)
+    except (PermissionError, OSError) as e:
+        logger.error(f"Error creating directory for {config_path}: {e}")
+        return False
     
     # Save configuration
     try:

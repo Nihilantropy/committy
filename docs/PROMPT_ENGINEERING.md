@@ -152,6 +152,6 @@ Generate a high-quality commit message for this feature addition.
 
 ## 9. Implementation
 
-The prompt templates are implemented in `autocommit/llm/prompts.py` and are used by the LLM interface to generate commit messages based on the git diff context provided by the LlamaIndex module.
+The prompt templates are implemented in `committy/llm/prompts.py` and are used by the LLM interface to generate commit messages based on the git diff context provided by the LlamaIndex module.
 
 The `get_prompt_for_diff` function selects the appropriate template based on the detected or specified change type, while `enhance_commit_message` performs post-processing on the generated message to ensure quality.

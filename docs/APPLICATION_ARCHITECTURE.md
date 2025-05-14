@@ -9,7 +9,7 @@ AutoCommit provides a seamless CLI experience that integrates with git workflows
 ### 1.1 Primary Commands
 
 ```
-autocommit [options]
+committy [options]
 ```
 
 Without arguments, the default behavior is to:
@@ -39,19 +39,19 @@ Without arguments, the default behavior is to:
 ### 1.3 Secondary Commands
 
 ```
-autocommit config [get|set|list] [key] [value]
+committy config [get|set|list] [key] [value]
 ```
 Manage configuration without editing the config file directly.
 
 ```
-autocommit model [list|download|update|info] [model_name]
+committy model [list|download|update|info] [model_name]
 ```
 Manage Ollama models used by AutoCommit.
 
 ### 1.4 Output Format
 
 ```
-$ autocommit
+$ committy
 Analyzing changes... ⏳
 Found changes in 3 files:
   - src/main.py (modified)
