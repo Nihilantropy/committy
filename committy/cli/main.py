@@ -43,12 +43,15 @@ def setup_logging(verbosity: int = 0):
     if verbosity >= 2:
         log_level = logging.DEBUG
         lib_log_level = logging.DEBUG
+        show_tracebacks = True
     elif verbosity >= 1:
         log_level = logging.DEBUG
-        lib_log_level = logging.WARNING  # Higher threshold for libraries
+        lib_log_level = logging.WARNING
+        show_tracebacks = True
     else:
-        log_level = logging.INFO
-        lib_log_level = logging.ERROR    # Only critical library errors in normal mode
+        log_level = logging.WARNING  # Change from INFO to WARNING for regular users
+        lib_log_level = logging.ERROR
+        show_tracebacks = False
     
     # Configure root logger
     logging.basicConfig(
@@ -56,7 +59,7 @@ def setup_logging(verbosity: int = 0):
         format="%(message)s",
         datefmt="[%X]",
         handlers=[RichHandler(
-            rich_tracebacks=verbosity >= 1,  # Only show tracebacks in verbose mode
+            rich_tracebacks=show_tracebacks,  # Only show tracebacks when verbose
             tracebacks_show_locals=verbosity >= 2,
             show_time=False,
             show_path=verbosity >= 1,
@@ -68,6 +71,7 @@ def setup_logging(verbosity: int = 0):
     logging.getLogger("requests").setLevel(lib_log_level)
     logging.getLogger("llama_index").setLevel(lib_log_level)
     logging.getLogger("huggingface_hub").setLevel(lib_log_level)
+    logging.getLogger("committy.git").setLevel(logging.WARNING)
     logging.getLogger("sentence_transformers").setLevel(lib_log_level)
 
 
@@ -421,10 +425,19 @@ def handle_command(parsed_args: Dict[str, Any]) -> int:
             try:
                 from committy.git.diff import get_diff
                 diff_text = get_diff()
-            except Exception as e:
-                logger.error(f"Error getting git diff: {e}", exc_info=True)
-                console.print(f"[error]Error: {str(e)}[/]")
-                return 1
+            except RuntimeError as e:
+                if "No staged changes found" in str(e):
+                    # This is a common case, handle it cleanly
+                    console.print("[warning]No staged changes found[/]")
+                    return 1
+                else:
+                    # For other errors, include more details if verbose
+                    if parsed_args.get("verbose", 0) > 0:
+                        logger.error(f"Error getting git diff: {e}", exc_info=True)
+                        console.print(f"[error]Error: {str(e)}[/]")
+                    else:
+                        console.print(f"[error]Error: {str(e)}[/]")
+                    return 1
                 
             # If only analyzing, display analysis and exit
             if parsed_args.get("analyze"):

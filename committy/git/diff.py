@@ -27,14 +27,21 @@ def get_diff() -> str:
         diff_text = _run_git_command(["diff", "--cached"])
         
         if not diff_text:
-            # No staged changes
-            logger.warning("No staged changes found")
+            # No staged changes - don't log this as an error, it's a normal condition
+            logger.info("No staged changes found")  # Change from warning to info
             raise RuntimeError("No staged changes found")
             
         return diff_text
     except Exception as e:
-        logger.error(f"Error getting git diff: {e}", exc_info=True)
-        raise RuntimeError(f"Failed to get git diff: {str(e)}")
+        # Don't log the error here, let the caller handle it
+        # This prevents duplicate error messages
+        if "No staged changes found" in str(e):
+            # Just re-raise without logging
+            raise
+        else:
+            # For other errors, log but don't show traceback
+            logger.error(f"Error getting git diff: {e}")
+            raise RuntimeError(f"Failed to get git diff: {str(e)}")
 
 
 def get_unstaged_diff() -> str:
