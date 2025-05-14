@@ -249,6 +249,26 @@ class PromptBenchmark:
         
         logger.info(f"Benchmark results saved to {output_path}")
 
+    def _calculate_similarity(self, message1: str, message2: str) -> float:
+        """Calculate similarity between two commit messages.
+        
+        Args:
+            message1: First commit message
+            message2: Second commit message
+            
+        Returns:
+            Similarity score between 0 and 1
+        """
+        # Simple similarity calculation based on common words
+        words1 = set(message1.lower().split())
+        words2 = set(message2.lower().split())
+        
+        if not words1 or not words2:
+            return 0.0
+        
+        common_words = words1.intersection(words2)
+        return len(common_words) / max(len(words1), len(words2))
+
 
 def create_test_suite(diffs_directory: str, output_path: str) -> None:
     """Create a test suite from a directory of diff files.

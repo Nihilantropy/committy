@@ -121,7 +121,7 @@ class TestApplicationWorkflow:
             # Restore working directory
             os.chdir(original_dir)
     
-    @patch("committy.cli.main.engine.generate_commit_message")
+    @patch("committy.core.engine.generate_commit_message")
     @patch("committy.cli.main.prompt_confirmation")
     def test_full_commit_workflow_with_mocks(self, mock_prompt, mock_generate, git_repo):
         """Test the full commit workflow with mocks."""

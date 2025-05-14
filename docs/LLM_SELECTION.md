@@ -52,7 +52,7 @@ The primary method for model configuration is through environment variables:
 Users can also set model preferences in the AutoCommit configuration file:
 
 ```yaml
-# ~/.config/autocommit/config.yml
+# ~/.config/committy/config.yml
 llm:
   model: gemma3:12b
   temperature: 0.2
@@ -69,7 +69,7 @@ llm:
 For one-time usage, command-line options override defaults:
 
 ```
-autocommit --model=codellama:13b --temperature=0.3
+committy --model=codellama:13b --temperature=0.3
 ```
 
 ### 3.4 Configuration Precedence

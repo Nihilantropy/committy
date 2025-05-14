@@ -23,8 +23,8 @@ class TestEngine:
         assert engine.config == {"model": "test-model"}
     
     @patch("committy.core.engine.parse_diff")
-    @patch("committy.core.engine.detect_likely_change_type")
-    @patch("committy.core.engine.build_prompt_from_diff")
+    @patch("committy.llm.prompts.detect_likely_change_type")
+    @patch("committy.llm.index.build_prompt_from_diff")
     def test_analyze_changes(self, mock_build_prompt, mock_detect, mock_parse_diff):
         """Test analyzing changes to determine commit type."""
         # Setup mocks
@@ -78,7 +78,7 @@ class TestEngine:
         assert mock_generate.call_args[1]["change_type"] == "fix"
         assert mock_generate.call_args[1]["model_config"]["model"] == "test-model"
     
-    @patch("committy.core.engine.get_diff")
+    @patch("committy.git.diff.get_diff")
     @patch("committy.core.engine.Engine.analyze_changes")
     @patch("committy.core.engine.Engine.generate_message")
     def test_process(self, mock_generate, mock_analyze, mock_get_diff):
@@ -128,7 +128,7 @@ class TestEngine:
         assert success is True
         assert result == "test message"
     
-    @patch("committy.core.engine.get_diff")
+    @patch("committy.git.diff.get_diff")
     def test_process_no_staged_changes(self, mock_get_diff):
         """Test process method when no staged changes found."""
         # Setup mock to raise an error
@@ -196,7 +196,7 @@ class TestEngine:
         # Verify result uses general scope
         assert "chore(general):" in result
     
-    @patch("committy.core.engine.commit")
+    @patch("committy.git.diff.commit")
     def test_execute_commit(self, mock_commit):
         """Test executing a git commit."""
         # Setup mock

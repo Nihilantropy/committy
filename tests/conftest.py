@@ -3,6 +3,7 @@
 import os
 import json
 import pytest
+from unittest.mock import patch
 
 
 @pytest.fixture
@@ -57,3 +58,9 @@ def mock_ollama_client():
     client.generate.return_value = "Generated commit message"
     
     return client
+
+@pytest.fixture(autouse=True)
+def setup_testing_env():
+    """Set up testing environment for all tests."""
+    with patch.dict(os.environ, {"IS_TESTING": "1"}):
+        yield

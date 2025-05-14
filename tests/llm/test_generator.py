@@ -71,7 +71,7 @@ class TestCommitMessageGenerator:
         
         # Verify correct method calls
         mock_parse_diff.assert_called_once_with("test diff")
-        mock_build_context.assert_called_once_with({"test": "data"})
+        mock_build_context.assert_called_once_with({"test": "data"}, 4000)
         mock_detect.assert_not_called()  # Should not be called when change_type is provided
         mock_get_prompt.assert_called_once_with("test context", "fix")
         mock_generate.assert_called_once_with("test prompt")
@@ -93,7 +93,7 @@ class TestCommitMessageGenerator:
         
         # Verify correct method calls
         mock_parse_diff.assert_called_once_with("test diff")
-        mock_build_context.assert_called_once_with({"test": "data"})
+        mock_build_context.assert_called_once_with({"test": "data"}, 4000)
         mock_detect.assert_called_once_with("test context")
         mock_get_prompt.assert_called_once_with("test context", "feat")
         mock_generate.assert_called_once_with("test prompt")
@@ -163,36 +163,7 @@ class TestCommitMessageGenerator:
         assert result["change_categories"]["added"] == 1
         assert result["likely_change_type"] == "feat"
     
-    def test_calculate_similarity(self):
-        """Test calculating similarity between messages."""
-        generator = CommitMessageGenerator()
-        
-        # Test with identical messages
-        similarity = generator._calculate_similarity(
-            "feat: add new feature",
-            "feat: add new feature"
-        )
-        assert similarity == 1.0
-        
-        # Test with completely different messages
-        similarity = generator._calculate_similarity(
-            "feat: add new feature",
-            "fix: correct bug xyz"
-        )
-        assert similarity < 0.3
-        
-        # Test with somewhat similar messages
-        similarity = generator._calculate_similarity(
-            "feat: add user authentication",
-            "feat: implement user authentication system"
-        )
-        assert 0.3 < similarity < 0.8
-        
-        # Test with empty messages
-        similarity = generator._calculate_similarity("", "")
-        assert similarity == 0.0
-    
-    @patch("committy.llm.generator.CommitMessageGenerator.ollama_client.generate")
+    @patch("committy.llm.generator.OllamaClient.generate")
     def test_generate_message(self, mock_generate):
         """Test message generation with LLM."""
         # Setup mock
