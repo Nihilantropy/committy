@@ -36,10 +36,30 @@ class OllamaClient:
             True if Ollama service is running, False otherwise.
         """
         try:
+            # Keep original timeout for test compatibility
             response = requests.get(f"{self.api_base}/tags", timeout=2)
             return response.status_code == 200
         except requests.exceptions.RequestException:
             logger.debug("Ollama service is not running")
+            
+            # Add more helpful diagnostics to the log but don't change behavior
+            try:
+                # Try to check if Ollama is installed
+                import subprocess
+                result = subprocess.run(["ollama", "--version"], 
+                                    capture_output=True, 
+                                    text=True, 
+                                    check=False)
+                
+                if result.returncode != 0:
+                    logger.debug("Ollama command not found - may need installation")
+                else:
+                    logger.debug(f"Ollama is installed: {result.stdout.strip()}")
+                    logger.debug("Ollama service may not be running - try 'ollama serve'")
+            except Exception:
+                # Ignore any errors in diagnostic process
+                pass
+                
             return False
 
     def list_models(self) -> List[Dict[str, Any]]:
@@ -89,10 +109,13 @@ class OllamaClient:
             ValueError: If model is not available
         """
         if not self.is_running():
-            raise ConnectionError(
+            # Keep original error message format for test compatibility
+            message = (
                 "Could not connect to Ollama. Please ensure Ollama is installed and "
                 "running. See docs/OLLAMA_SETUP.md for installation instructions."
             )
+            logger.error(message)
+            raise ConnectionError(message)
         
         model_name = model_config["model"]
         if not self.has_model(model_name):

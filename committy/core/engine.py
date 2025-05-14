@@ -155,6 +155,11 @@ class Engine:
             return message
         except Exception as e:
             logger.error(f"Error generating commit message: {e}", exc_info=True)
+            
+            # Add informative message about the error
+            if "Could not connect to Ollama" in str(e):
+                logger.warning("Using fallback commit message generation due to Ollama connection issue")
+            
             # Fallback to a basic message if LLM fails
             return self.fallback_message(diff_text, change_type)
     

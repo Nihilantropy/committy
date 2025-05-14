@@ -126,6 +126,7 @@ class TestCliMain:
         assert logging.getLogger("urllib3").level == logging.WARNING  # Changed from INFO
         assert logging.getLogger("requests").level == logging.WARNING  # Changed from INFO
         assert logging.getLogger("llama_index").level == logging.WARNING  # Changed from INFO
+        assert logging.getLogger("committy").level == logging.WARNING
         
         # Reset mock
         mock_basicConfig.reset_mock()
@@ -137,6 +138,7 @@ class TestCliMain:
         assert logging.getLogger("urllib3").level == logging.DEBUG
         assert logging.getLogger("requests").level == logging.DEBUG
         assert logging.getLogger("llama_index").level == logging.DEBUG
+        assert logging.getLogger("committy").level == logging.DEBUG
     
     @patch("committy.cli.main.console.print")
     def test_display_version(self, mock_print):
