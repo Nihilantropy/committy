@@ -13,9 +13,8 @@ from committy.git.parser import parse_diff
 from committy.llm.index import build_prompt_from_diff
 from committy.llm.ollama import OllamaClient, get_default_model_config
 from committy.llm.prompts import (
-    get_prompt_for_diff,
-    detect_likely_change_type,
-    enhance_commit_message
+    enhance_commit_message,
+    generate_prompt
 )
 
 # Configure logger
@@ -57,36 +56,22 @@ class CommitMessageGenerator:
         
         Args:
             diff_text: Git diff text
-            change_type: Optional change type to use for template selection
-            use_specialized_template: Whether to use specialized templates
+            change_type: Optional change type (not used in simplified version)
+            use_specialized_template: Whether to use specialized templates (not used in simplified version)
             
         Returns:
             Generated commit message
         """
-        # Parse the diff
-        git_diff = parse_diff(diff_text)
-        diff_data = git_diff.as_dict()
-        
+        # Log information about the diff
         logger.info(
-            f"Generating commit message for diff with "
-            f"{len(git_diff.files)} files, "
-            f"{git_diff.summary.total_additions} additions, "
-            f"{git_diff.summary.total_deletions} deletions"
+            f"Generating commit message for diff of length {len(diff_text)}"
         )
         
-        # Build context from diff data
-        context = self._build_context(diff_data)
+        # Get model name for template selection
+        model_name = self.model_config.get("model", "")
         
-        # Detect change type if not provided
-        if not change_type and use_specialized_template:
-            change_type = detect_likely_change_type(context)
-            logger.info(f"Detected change type: {change_type or 'unknown'}")
-        
-        # Get appropriate prompt template
-        if use_specialized_template and change_type:
-            prompt = get_prompt_for_diff(context, change_type)
-        else:
-            prompt = get_prompt_for_diff(context)
+        # Generate a simple prompt
+        prompt = generate_prompt(diff_text, model_name)
         
         # Generate commit message
         raw_message = self._generate_message(prompt)
@@ -105,6 +90,40 @@ class CommitMessageGenerator:
         """
         # Use LlamaIndex to extract context
         return build_prompt_from_diff(diff_data, self.max_context_tokens)
+    
+    def _build_prompt(
+        self,
+        context: str,
+        change_type: Optional[str] = None,
+        model_name: Optional[str] = None,
+        use_specialized_template: bool = True
+    ) -> str:
+        """Build an optimized prompt for the LLM.
+        
+        Args:
+            context: Diff context
+            change_type: Optional change type
+            model_name: Model name for size-based optimization
+            use_specialized_template: Whether to use specialized templates
+            
+        Returns:
+            Optimized prompt for the LLM
+        """
+        # Detect change type if not provided and specialized templates are requested
+        if change_type is None and use_specialized_template:
+            change_type = detect_likely_change_type(context)
+            logger.info(f"Detected change type: {change_type or 'unknown'}")
+        
+        # Use specialized templates only if requested and change type is available
+        if not use_specialized_template:
+            change_type = None
+            
+        # Generate the optimized prompt using our new function
+        # This will automatically handle model size and template selection
+        prompt = generate_commit_prompt(context, change_type, model_name)
+        
+        logger.debug(f"Generated prompt for model {model_name or 'default'} with change type {change_type or 'generic'}")
+        return prompt
     
     def _generate_message(self, prompt: str) -> str:
         """Generate a commit message using the LLM.
@@ -174,52 +193,7 @@ class CommitMessageGenerator:
         
         return analysis
     
-    def _get_file_types(self, git_diff: GitDiff) -> Dict[str, int]:
-        """Get count of file types in the diff.
-        
-        Args:
-            git_diff: Git diff object
-            
-        Returns:
-            Dictionary of file type counts
-        """
-        file_types = {}
-        
-        for file in git_diff.files:
-            ext = file.extension or "no_extension"
-            if ext.startswith("."):
-                ext = ext[1:]
-            
-            file_types[ext] = file_types.get(ext, 0) + 1
-        
-        return file_types
-    
-    def _categorize_changes(self, git_diff: GitDiff) -> Dict[str, int]:
-        """Categorize changes in the diff.
-        
-        Args:
-            git_diff: Git diff object
-            
-        Returns:
-            Dictionary of change category counts
-        """
-        categories = {
-            "added": 0,
-            "modified": 0,
-            "deleted": 0,
-            "renamed": 0,
-            "binary": 0,
-        }
-        
-        for file in git_diff.files:
-            if file.change_type in categories:
-                categories[file.change_type] += 1
-            
-            # Check for binary files
-            if "Binary file" in file.diff_content:
-                categories["binary"] += 1
-        
-        return categories
+    # [rest of the class methods remain unchanged]
 
 
 def generate_commit_message(
