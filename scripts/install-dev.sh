@@ -108,6 +108,19 @@ else
     echo -e "${GREEN}✓ Package installed in development mode${NC}"
 fi
 
+echo -e "${YELLOW}Installing basic requirements...${NC}"
+if [ -f "requirements-dev.txt" ]; then
+    pip install -r requirements.txt
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Failed to install dependencies.${NC}"
+        exit 1
+    else
+        echo -e "${GREEN}✓ Dependencies installed${NC}"
+    fi
+else
+    echo -e "${YELLOW}requirements.txt not found, skipping...${NC}"
+fi
+
 echo -e "${YELLOW}Installing development requirements...${NC}"
 if [ -f "requirements-dev.txt" ]; then
     pip install -r requirements-dev.txt
