@@ -1,4 +1,4 @@
-"""Ollama integration for AutoCommit.
+"""Ollama integration for Committy.
 
 This module handles the interaction with the Ollama API for text generation.
 It assumes Ollama is already installed and the required models are available.
@@ -25,7 +25,7 @@ class OllamaClient:
             host: Ollama API host. Defaults to OLLAMA_HOST env var or localhost.
         """
         self.host = host or os.environ.get("OLLAMA_HOST", "http://localhost:11434")
-        self.timeout = int(os.environ.get("AUTOCOMMIT_TIMEOUT", "10"))
+        self.timeout = int(os.environ.get("COMMITTY_TIMEOUT", "100"))
         self.api_base = f"{self.host}/api"
         logger.debug(f"Initialized Ollama client with host: {self.host}")
 
@@ -166,11 +166,11 @@ def get_default_model_config() -> Dict[str, Any]:
     config = {
         "model": model_name,
         "parameters": {
-            "temperature": float(os.environ.get("AUTOCOMMIT_TEMP", "0.2")),
+            "temperature": float(os.environ.get("COMMITTY_TEMP", "0.2")),
             "top_p": 0.9,
             "top_k": 40,
             "repeat_penalty": 1.1,
-            "max_tokens": int(os.environ.get("AUTOCOMMIT_MAX_TOKENS", "256")),
+            "max_tokens": int(os.environ.get("COMMITTY_MAX_TOKENS", "256")),
             "stop": ["```", "---"]
         }
     }

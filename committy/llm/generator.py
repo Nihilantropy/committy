@@ -122,6 +122,11 @@ class CommitMessageGenerator:
             try:
                 logger.debug("Generating commit message")
                 message = self.ollama_client.generate(prompt, self.model_config)
+                
+                # Check if the message is empty
+                if not message.strip():
+                    raise ValueError("Model returned an empty response, please try again or use a different model")
+                    
                 return message.strip()
             except Exception as e:
                 last_error = e

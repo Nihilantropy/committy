@@ -1,10 +1,10 @@
 # Commit Message Convention
 
-This document outlines the commit message format and best practices adopted by AutoCommit for generating high-quality, consistent commit messages.
+This document outlines the commit message format and best practices adopted by Committy for generating high-quality, consistent commit messages.
 
 ## 1. Conventional Commits Specification
 
-AutoCommit follows the [Conventional Commits](https://www.conventionalcommits.org/) specification, a lightweight convention built on top of commit messages. This specification provides a set of rules for creating an explicit commit history that makes automated tools more effective and helps with automated versioning and changelog generation.
+Committy follows the [Conventional Commits](https://www.conventionalcommits.org/) specification, a lightweight convention built on top of commit messages. This specification provides a set of rules for creating an explicit commit history that makes automated tools more effective and helps with automated versioning and changelog generation.
 
 ### 1.1 Basic Structure
 
@@ -76,7 +76,7 @@ Breaking changes should be indicated in two ways:
 
 ## 2. Industry Standards and Best Practices
 
-Beyond the Conventional Commits specification, AutoCommit incorporates additional best practices from the industry:
+Beyond the Conventional Commits specification, Committy incorporates additional best practices from the industry:
 
 ### 2.1 Angular's Commit Convention
 
@@ -110,9 +110,9 @@ GitHub PR titles often become merge commit messages, so similar rules apply:
 - Reference issue numbers when applicable
 - Use keywords that GitHub recognizes (like "Fixes #123")
 
-## 3. AutoCommit's Adopted Format
+## 3. Committy's Adopted Format
 
-Based on the above research, AutoCommit generates commit messages with the following format:
+Based on the above research, Committy generates commit messages with the following format:
 
 ### 3.1 Basic Format
 
@@ -189,7 +189,7 @@ Reduces query time by 40% for large datasets by implementing
 a more efficient B-tree traversal.
 ```
 
-## 4. Implementation Guidelines for AutoCommit
+## 4. Implementation Guidelines for Committy
 
 The AI-powered commit message generator should:
 

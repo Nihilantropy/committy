@@ -1,6 +1,6 @@
 #!/bin/bash
-# setup_ollama.sh - Helper script to install and configure Ollama for AutoCommit
-# This script is provided for convenience and is not required for AutoCommit to work.
+# setup_ollama.sh - Helper script to install and configure Ollama for Committy
+# This script is provided for convenience and is not required for Committy to work.
 
 set -e  # Exit on any error
 
@@ -16,7 +16,7 @@ DEFAULT_MODEL="gemma3:12b"
 MODEL=${1:-$DEFAULT_MODEL}
 
 echo -e "${BLUE}=======================================${NC}"
-echo -e "${BLUE}AutoCommit - Ollama Setup Script${NC}"
+echo -e "${BLUE}Committy - Ollama Setup Script${NC}"
 echo -e "${BLUE}=======================================${NC}\n"
 
 # Check if script is run with sudo (not recommended)
@@ -119,12 +119,12 @@ if grep -q "OLLAMA_MODEL" ~/.bashrc; then
 else
     cat >> ~/.bashrc << EOF
 
-# AutoCommit environment variables
+# Committy environment variables
 export OLLAMA_MODEL="$MODEL"
 export OLLAMA_HOST="http://localhost:11434"
-export AUTOCOMMIT_TEMP="0.2"
-export AUTOCOMMIT_MAX_TOKENS="256"
-export AUTOCOMMIT_TIMEOUT="10"
+export COMMITTY_TEMP="0.2"
+export COMMITTY_MAX_TOKENS="256"
+export COMMITTY_TIMEOUT="300"
 EOF
     echo -e "${GREEN}✓ Environment variables added to .bashrc${NC}"
     echo -e "${YELLOW}Note: You'll need to restart your terminal or run 'source ~/.bashrc' for these to take effect.${NC}"
@@ -141,7 +141,7 @@ echo -e "  - Ollama service: Running"
 echo -e "  - Model: $MODEL installed"
 echo -e "  - Environment variables: Configured in .bashrc"
 echo
-echo -e "You can now use AutoCommit with Ollama. If you encounter any issues,"
+echo -e "You can now use Committy with Ollama. If you encounter any issues,"
 echo -e "please refer to the docs/OLLAMA_SETUP.md documentation file."
 echo
 echo -e "${YELLOW}Important: You may need to restart your terminal or run 'source ~/.bashrc'${NC}"

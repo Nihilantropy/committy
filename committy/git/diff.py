@@ -71,6 +71,26 @@ def get_unstaged_diff() -> str:
         logger.error(f"Error getting unstaged git diff: {e}", exc_info=True)
         raise RuntimeError(f"Failed to get unstaged git diff: {str(e)}")
 
+def stage_all() -> bool:
+    """Stage all changes.
+    
+    Returns:
+        True if staging was successful, False otherwise
+    """
+    try:
+        # Check if we're in a git repository
+        if not is_git_repository():
+            logger.error("Not a git repository")
+            return False
+        
+        # Stage all changes
+        _run_git_command(["add", "-A"])
+        
+        logger.info("All changes staged")
+        return True
+    except Exception as e:
+        logger.error(f"Error staging changes: {e}", exc_info=True)
+        return False
 
 def get_changed_files() -> List[str]:
     """Get list of staged files.

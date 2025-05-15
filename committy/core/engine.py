@@ -33,7 +33,7 @@ class Engine:
         self.config = load_config(config_path)
         logger.info("Committy engine initialized")
     
-    def process(self, options: Dict[str, Any]) -> Tuple[bool, str]:
+    def process(self, options: Dict[str, Any]) -> Tuple[bool, str, bool]:
         """Process git diff and generate commit message.
         
         Args:
@@ -44,9 +44,10 @@ class Engine:
                 - model: LLM model to use (optional)
             
         Returns:
-            Tuple of (success, result)
+            Tuple of (success, result, is_staged)
                 - success: True if processing was successful
                 - result: Generated commit message or error message
+                - is_staged: True if changes were already staged, False if unstaged
         """
         try:
             # Extract options
@@ -54,15 +55,16 @@ class Engine:
             change_type = options.get("change_type")
             format_type = options.get("format_type", self.config.get("format", "conventional"))
             model_name = options.get("model", self.config.get("model"))
+            is_staged = True  # Default to True if diff_text is provided
             
             # Get the diff text if not provided
             if not diff_text:
-                diff_text = self.get_diff_from_git()
+                diff_text, is_staged = self.get_diff_from_git()
                 if not diff_text:
-                    return False, "No staged changes found"
+                    return False, "No changes found (staged or unstaged)", True
             
             logger.info("Processing git diff")
-            logger.debug(f"Change type: {change_type}, Format: {format_type}, Model: {model_name}")
+            logger.debug(f"Change type: {change_type}, Format: {format_type}, Model: {model_name}, Staged: {is_staged}")
             
             # Analyze diff to determine change type if not provided
             if not change_type:
@@ -72,22 +74,37 @@ class Engine:
             # Generate commit message
             message = self.generate_message(diff_text, change_type, format_type, model_name)
             
-            return True, message
+            return True, message, is_staged
             
         except Exception as e:
             logger.error(f"Error processing git diff: {e}", exc_info=True)
-            return False, f"Error: {str(e)}"
+            return False, f"Error: {str(e)}", True
     
-    def get_diff_from_git(self) -> str:
-        """Get diff from git staged changes.
+    def get_diff_from_git(self) -> Tuple[str, bool]:
+        """Get diff from git, first checking staged changes, then unstaged if none.
         
         Returns:
-            Git diff text
+            Tuple of (git_diff_text, is_staged)
+                - git_diff_text: The git diff content
+                - is_staged: True if staged changes, False if unstaged
         """
         try:
             # Import here to avoid circular imports
-            from committy.git.diff import get_diff
-            return get_diff()
+            from committy.git.diff import get_diff, get_unstaged_diff
+            
+            # First try to get staged changes
+            try:
+                diff = get_diff()
+                return diff, True  # Staged changes found
+            except RuntimeError as e:
+                if "No staged changes found" in str(e):
+                    # No staged changes, try unstaged
+                    diff = get_unstaged_diff()
+                    return diff, False  # Unstaged changes found
+                else:
+                    # Other error, re-raise
+                    raise
+                    
         except Exception as e:
             logger.error(f"Error getting git diff: {e}", exc_info=True)
             raise RuntimeError(f"Failed to get git diff: {e}")
@@ -132,36 +149,26 @@ class Engine:
             change_type: Optional change type
             format_type: Format type for commit message
             model_name: Optional model name
-            
+                
         Returns:
             Generated commit message
         """
-        try:
-            # Prepare model config if model name provided
-            model_config = None
-            if model_name:
-                from committy.llm.ollama import get_default_model_config
-                model_config = get_default_model_config()
-                model_config["model"] = model_name
-            
-            # Generate commit message
-            message = generate_commit_message(
-                diff_text=diff_text,
-                change_type=change_type,
-                model_config=model_config,
-                use_specialized_template=(format_type == "conventional")
-            )
-            
-            return message
-        except Exception as e:
-            logger.error(f"Error generating commit message: {e}", exc_info=True)
-            
-            # Add informative message about the error
-            if "Could not connect to Ollama" in str(e):
-                logger.warning("Using fallback commit message generation due to Ollama connection issue")
-            
-            # Fallback to a basic message if LLM fails
-            return self.fallback_message(diff_text, change_type)
+        # Prepare model config if model name provided
+        model_config = None
+        if model_name:
+            from committy.llm.ollama import get_default_model_config
+            model_config = get_default_model_config()
+            model_config["model"] = model_name
+        
+        # Generate commit message
+        message = generate_commit_message(
+            diff_text=diff_text,
+            change_type=change_type,
+            model_config=model_config,
+            use_specialized_template=(format_type == "conventional")
+        )
+        
+        return message
     
     def fallback_message(self, diff_text: str, change_type: Optional[str] = None) -> str:
         """Generate a fallback commit message when LLM fails.
@@ -199,6 +206,30 @@ class Engine:
             logger.error(f"Error generating fallback message: {e}", exc_info=True)
             # Ultra basic fallback
             return "chore: update code"
+
+    def stage_and_commit(self, message: str) -> bool:
+        """Stage all changes and commit with the provided message.
+        
+        Args:
+            message: Commit message
+            
+        Returns:
+            True if staging and commit was successful
+        """
+        try:
+            # Import here to avoid circular imports
+            from committy.git.diff import stage_all, commit
+            
+            # Stage all changes
+            if not stage_all():
+                logger.error("Failed to stage changes")
+                return False
+                
+            # Commit with the message
+            return commit(message)
+        except Exception as e:
+            logger.error(f"Error staging and committing changes: {e}", exc_info=True)
+            return False
     
     def execute_commit(self, message: str) -> bool:
         """Execute git commit with generated message.
@@ -256,7 +287,7 @@ def process_diff(
     format_type: str = "conventional",
     model_name: Optional[str] = None,
     config_path: Optional[str] = None,
-) -> Tuple[bool, str]:
+) -> Tuple[bool, str, bool]:
     """Process git diff and generate commit message.
     
     This is a convenience function that creates an Engine instance
@@ -270,7 +301,7 @@ def process_diff(
         config_path: Optional path to configuration file
         
     Returns:
-        Tuple of (success, result)
+        Tuple of (success, result, is_staged)
     """
     engine = Engine(config_path=config_path)
     options = {

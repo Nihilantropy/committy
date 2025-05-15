@@ -426,83 +426,84 @@ def handle_command(parsed_args: Dict[str, Any]) -> int:
             # Process the diff
             start_time = time.time()  # Start measuring time
             
-            # Get the diff for analysis if needed
-            try:
-                from committy.git.diff import get_diff
-                diff_text = get_diff()
-            except RuntimeError as e:
-                if "No staged changes found" in str(e):
-                    # This is a common case, handle it cleanly
-                    console.print("[warning]No staged changes found[/]")
-                    return 1
-                else:
-                    # For other errors, include more details if verbose
-                    if parsed_args.get("verbose", 0) > 0:
-                        logger.error(f"Error getting git diff: {e}", exc_info=True)
-                        console.print(f"[error]Error: {str(e)}[/]")
-                    else:
-                        console.print(f"[error]Error: {str(e)}[/]")
-                    return 1
-                
-            # If only analyzing, display analysis and exit
-            if parsed_args.get("analyze"):
-                status.stop()
-                display_diff_analysis(diff_text)
-                return 0
-                
-            # Otherwise, generate commit message
-            success, result = process_diff(
-                config_path=parsed_args.get("config")
+            # Try to process diff directly - this will now check for both staged and unstaged
+            success, result, is_staged = process_diff(
+                config_path=parsed_args.get("config"),
+                format_type=parsed_args.get("format", "conventional"),
+                model_name=parsed_args.get("model")
             )
             
             # Stop timer
             elapsed = time.time() - start_time
             status.stop()
-            
+
         if not success:
-            console.print(f"[error]Error: {result}[/]")
+            console.print(f"[error]{result}[/]")
             return 1
-        
+
         # Log generation time
         logger.info(f"Commit message generated in {elapsed:.2f} seconds")
-        
-        # Dry run mode just prints the message
-        if parsed_args.get("dry_run"):
-            syntax = Syntax(
-                result,
-                "markdown",
-                theme="monokai",
-                line_numbers=False,
-                word_wrap=True
-            )
-            console.print("\n[bold]Generated commit message (dry run):[/]")
-            console.print(Panel(syntax))
-            console.print(f"[info]Generation took {elapsed:.2f} seconds[/]")
-            return 0
-        
-        # Automatically open in editor if requested
-        if parsed_args.get("edit"):
-            result = open_editor(result)
-        
-        # Prompt for confirmation unless --no-confirm
-        if not parsed_args.get("no_confirm"):
-            confirmed, result = prompt_confirmation(result)
-            if not confirmed:
-                console.print("[warning]Commit cancelled[/]")
-                return 0
-        
-        # Execute the commit
-        with console.status("[info]Committing changes...[/]", spinner="dots") as status:
-            engine = Engine(config_path=parsed_args.get("config"))
-            commit_success = engine.execute_commit(result)
-            status.stop()
+
+        # Handle staged vs unstaged changes differently
+        if not is_staged:
+            # For unstaged changes, prompt user for action
+            action = prompt_for_unstaged_action(result)
             
-        if commit_success:
-            console.print("[success]Commit successful![/]")
-            return 0
+            if action == "stage":
+                with console.status("[info]Staging and committing changes...[/]", spinner="dots") as status:
+                    engine = Engine(config_path=parsed_args.get("config"))
+                    
+                    commit_success = engine.stage_and_commit(result)
+                    status.stop()
+                
+                if commit_success:
+                    console.print("[success]Changes staged and committed successfully![/]")
+                    return 0
+                else:
+                    console.print("[error]Failed to stage and commit changes[/]")
+                    return 1
+            else:  # action == "discard"
+                console.print("[info]Commit message discarded.[/]")
+                return 0
         else:
-            console.print("[error]Failed to execute commit[/]")
-            return 1
+            # For staged changes, continue with normal flow (dry run, edit, confirm, commit)
+            # Dry run mode just prints the message
+            if parsed_args.get("dry_run"):
+                syntax = Syntax(
+                    result,
+                    "markdown",
+                    theme="monokai",
+                    line_numbers=False,
+                    word_wrap=True
+                )
+                console.print("\n[bold]Generated commit message (dry run):[/]")
+                console.print(Panel(syntax))
+                console.print(f"[info]Generation took {elapsed:.2f} seconds[/]")
+                return 0
+            
+            # Automatically open in editor if requested
+            if parsed_args.get("edit"):
+                result = open_editor(result)
+            
+            # Prompt for confirmation unless --no-confirm
+            if not parsed_args.get("no_confirm"):
+                confirmed, result = prompt_confirmation(result)
+                if not confirmed:
+                    console.print("[warning]Commit cancelled[/]")
+                    return 0
+            
+            # Execute the commit
+            with console.status("[info]Committing changes...[/]", spinner="dots") as status:
+                engine = Engine(config_path=parsed_args.get("config"))
+                commit_success = engine.execute_commit(result)
+                status.stop()
+                
+            if commit_success:
+                console.print("[success]Commit successful![/]")
+                return 0
+            else:
+                console.print("[error]Failed to execute commit[/]")
+                return 1
         
     except KeyboardInterrupt:
         console.print("\n[warning]Operation cancelled by user[/]")
@@ -516,6 +517,62 @@ def handle_command(parsed_args: Dict[str, Any]) -> int:
             console.print("[info]Run with --verbose for more details[/]")
         return 1
 
+def prompt_for_unstaged_action(message: str) -> Tuple[str, str]:
+    """Prompt user for action with unstaged changes.
+    
+    Args:
+        message: Generated commit message
+    
+    Returns:
+        Tuple of (action, possibly_edited_message):
+            - action: 'stage' for stage and commit, 'discard' to discard
+            - possibly_edited_message: Original or edited message
+    """
+    console.print("\n[bold yellow]⚠️ Message generated for UNSTAGED changes![/]")
+    console.print("The changes have not been staged (git add) yet.")
+    
+    # Display the message with syntax highlighting
+    syntax = Syntax(
+        message,
+        "markdown",
+        theme="monokai",
+        line_numbers=False,
+        word_wrap=True
+    )
+    console.print(Panel(syntax))
+    
+    # Ask the user what to do
+    while True:
+        response = console.input(
+            "\nWhat would you like to do? [S]tage and commit / [E]dit / [D]iscard message: "
+        ).strip().lower()
+        
+        if response in ["s", "stage"]:
+            return "stage", message
+        elif response in ["e", "edit"]:
+            edited_message = open_editor(message)
+            if edited_message.strip():
+                console.print("\n[bold]Updated commit message:[/]")
+                syntax = Syntax(
+                    edited_message,
+                    "markdown",
+                    theme="monokai",
+                    line_numbers=False,
+                    word_wrap=True
+                )
+                console.print(Panel(syntax))
+                
+                # Ask if they want to stage and commit with edited message
+                edit_response = console.input("\nStage and commit with this edited message? [Y/n]: ").strip().lower()
+                if edit_response == "" or edit_response == "y":
+                    return "stage", edited_message
+                else:
+                    return "discard", edited_message
+            return "discard", message  # If editor returned empty
+        elif response in ["d", "discard"]:
+            return "discard", message
+        else:
+            console.print("[warning]Invalid response. Please enter 'S', 'E', or 'D'.[/]")
 
 def main(args: Optional[List[str]] = None) -> int:
     """Run the Committy CLI application.

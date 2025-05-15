@@ -1,10 +1,10 @@
 # LLM Selection & Configuration
 
-This document outlines the simplified approach for configuring Large Language Models (LLMs) in AutoCommit for generating commit messages.
+This document outlines the simplified approach for configuring Large Language Models (LLMs) in Committy for generating commit messages.
 
 ## 1. Model Selection Approach
 
-AutoCommit adopts a flexible approach to LLM selection, focusing on usability and adaptability:
+Committy adopts a flexible approach to LLM selection, focusing on usability and adaptability:
 
 1. **Default Model**: Gemma3:12b
 2. **User Customization**: Any Ollama-compatible model can be used via configuration
@@ -43,13 +43,13 @@ The primary method for model configuration is through environment variables:
 |----------------------|-------------|---------------|
 | `OLLAMA_MODEL` | Model identifier to use | gemma3:12b |
 | `OLLAMA_HOST` | Ollama API host | http://localhost:11434 |
-| `AUTOCOMMIT_TEMP` | Model temperature | 0.2 |
-| `AUTOCOMMIT_MAX_TOKENS` | Maximum response length | 256 |
-| `AUTOCOMMIT_TIMEOUT` | Request timeout in seconds | 10 |
+| `COMMITTY_TEMP` | Model temperature | 0.2 |
+| `COMMITTY_MAX_TOKENS` | Maximum response length | 256 |
+| `COMMITTY_TIMEOUT` | Request timeout in seconds | 10 |
 
 ### 3.2 Configuration File
 
-Users can also set model preferences in the AutoCommit configuration file:
+Users can also set model preferences in the Committy configuration file:
 
 ```yaml
 # ~/.config/committy/config.yml
@@ -81,15 +81,15 @@ committy --model=codellama:13b --temperature=0.3
 
 ## 4. Universal Parameter Template
 
-AutoCommit uses a universal parameter template compatible with all Ollama models:
+Committy uses a universal parameter template compatible with all Ollama models:
 
 ```python
 DEFAULT_PARAMETERS = {
-    "temperature": float(os.environ.get("AUTOCOMMIT_TEMP", "0.2")),
+    "temperature": float(os.environ.get("COMMITTY_TEMP", "0.2")),
     "top_p": 0.9,
     "top_k": 40,
     "repeat_penalty": 1.1,
-    "max_tokens": int(os.environ.get("AUTOCOMMIT_MAX_TOKENS", "256")),
+    "max_tokens": int(os.environ.get("COMMITTY_MAX_TOKENS", "256")),
     "stop": ["```", "---"]
 }
 ```
@@ -144,11 +144,11 @@ def get_model_config() -> Dict[str, Any]:
     config = {
         "model": model_name,
         "parameters": {
-            "temperature": float(os.environ.get("AUTOCOMMIT_TEMP", "0.2")),
+            "temperature": float(os.environ.get("COMMITTY_TEMP", "0.2")),
             "top_p": 0.9,
             "top_k": 40,
             "repeat_penalty": 1.1,
-            "max_tokens": int(os.environ.get("AUTOCOMMIT_MAX_TOKENS", "256")),
+            "max_tokens": int(os.environ.get("COMMITTY_MAX_TOKENS", "256")),
             "stop": ["```", "---"]
         }
     }
@@ -173,7 +173,7 @@ class OllamaClient:
             host: Ollama API host. Defaults to OLLAMA_HOST env var or localhost.
         """
         self.host = host or os.environ.get("OLLAMA_HOST", "http://localhost:11434")
-        self.timeout = int(os.environ.get("AUTOCOMMIT_TIMEOUT", "10"))
+        self.timeout = int(os.environ.get("COMMITTY_TIMEOUT", "10"))
     
     def generate(self, prompt: str, model_config: Dict[str, Any]) -> str:
         """Generate text using the Ollama API.
@@ -214,6 +214,6 @@ class OllamaClient:
 
 ## 7. Conclusion
 
-This simplified approach to model selection provides a good balance between ease of use and flexibility. By defaulting to Gemma3:12b but allowing easy customization through environment variables, AutoCommit accommodates a wide range of user needs and hardware capabilities.
+This simplified approach to model selection provides a good balance between ease of use and flexibility. By defaulting to Gemma3:12b but allowing easy customization through environment variables, Committy accommodates a wide range of user needs and hardware capabilities.
 
-As new models become available in Ollama, users can experiment with them simply by changing the `OLLAMA_MODEL` environment variable, without requiring changes to the AutoCommit codebase.
+As new models become available in Ollama, users can experiment with them simply by changing the `OLLAMA_MODEL` environment variable, without requiring changes to the Committy codebase.

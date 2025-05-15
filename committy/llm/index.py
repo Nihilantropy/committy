@@ -1,4 +1,4 @@
-"""LlamaIndex integration for AutoCommit.
+"""LlamaIndex integration for Committy.
 
 This module provides functionality for indexing git diffs and querying
 them via LlamaIndex to generate commit messages.

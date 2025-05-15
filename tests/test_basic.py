@@ -1,4 +1,4 @@
-"""Basic tests for AutoCommit."""
+"""Basic tests for Committy."""
 
 def test_import():
     """Test that the package can be imported."""
