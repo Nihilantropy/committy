@@ -452,7 +452,7 @@ def handle_command(parsed_args: Dict[str, Any]) -> int:
             if action == "stage":
                 with console.status("[info]Staging and committing changes...[/]", spinner="dots") as status:
                     engine = Engine(config_path=parsed_args.get("config"))
-                    
+
                     commit_success = engine.stage_and_commit(result)
                     status.stop()
                 
@@ -564,7 +564,7 @@ def prompt_for_unstaged_action(message: str) -> Tuple[str, str]:
                 
                 # Ask if they want to stage and commit with edited message
                 edit_response = console.input("\nStage and commit with this edited message? [Y/n]: ").strip().lower()
-                if edit_response == "" or edit_response == "y":
+                if edit_response == "" or edit_response == "y" or edit_response == "Y":
                     return "stage", edited_message
                 else:
                     return "discard", edited_message

@@ -106,3 +106,48 @@ def enhance_commit_message(message: str) -> str:
     
     # Reassemble the message
     return "\n\n".join(parts)
+
+def detect_likely_change_type(diff_text: str) -> Optional[str]:
+    """Detect the likely change type based on the diff content.
+    
+    Args:
+        diff_text: Git diff text or context containing the diff
+        
+    Returns:
+        Detected change type or None if could not be determined
+    """
+    # Convert to lowercase for case-insensitive matching
+    diff_lower = diff_text.lower()
+    
+    # Define patterns for different change types
+    patterns = {
+        "feat": ["new file", "feature", "add", "implement", "create"],
+        "fix": ["fix", "bug", "issue", "error", "crash", "resolve", "problem"],
+        "docs": ["documentation", "docs", "readme", "comment", "guide"],
+        "style": ["style", "format", "whitespace", "indent", "lint"],
+        "refactor": ["refactor", "restructure", "rewrite", "clean", "simplify", "improve code"],
+        "perf": ["performance", "optimize", "speed", "efficient", "fast"],
+        "test": ["test", "spec", "assert", "mock", "stub"],
+        "build": ["build", "package", "dependency", "version", "upgrade"],
+        "ci": ["ci", "pipeline", "workflow", "github action", "travis", "jenkins"],
+        "chore": ["chore", "maintenance", "housekeeping", "metadata"]
+    }
+    
+    # Count pattern matches for each type
+    type_scores = {change_type: 0 for change_type in patterns}
+    
+    for change_type, keywords in patterns.items():
+        for keyword in keywords:
+            type_scores[change_type] += diff_lower.count(keyword)
+    
+    # Find type with highest score, if any have score > 0
+    max_score = 0
+    detected_type = None
+    
+    for change_type, score in type_scores.items():
+        if score > max_score:
+            max_score = score
+            detected_type = change_type
+    
+    # Only return a type if we have a reasonable confidence
+    return detected_type if max_score > 0 else None

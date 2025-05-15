@@ -122,14 +122,17 @@ class Engine:
             # Parse the diff
             git_diff = parse_diff(diff_text)
             
-            # Use prompt detection from existing code
+            # Use the new detection function directly on the diff text
+            # Simpler approach that doesn't require building complex context
             from committy.llm.prompts import detect_likely_change_type
-            from committy.llm.index import build_prompt_from_diff
             
-            # Build context and detect change type
-            context = build_prompt_from_diff(git_diff.as_dict())
-            change_type = detect_likely_change_type(context)
+            # Get the diff content as a string
+            diff_content = diff_text
             
+            # Detect change type
+            change_type = detect_likely_change_type(diff_content)
+            
+            logger.debug(f"Detected change type: {change_type or 'unknown'}")
             return change_type
         except Exception as e:
             logger.warning(f"Error analyzing changes: {e}", exc_info=True)
