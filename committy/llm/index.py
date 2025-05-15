@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 # Configure LlamaIndex to use local embeddings
-Settings.embed_model = HuggingFaceEmbedding(model_name="all-MiniLM-L6-v2")
+Settings.embed_model = HuggingFaceEmbedding(model_name="all-MiniLM-L6-v2", device="cpu") # TODO remove the device to use gpu by default
 
 class DiffIndexer:
     """Indexer for git diffs using LlamaIndex."""
@@ -47,7 +47,7 @@ class DiffIndexer:
         Args:
             diff_data: Dict containing git diff information
             
-        Returns:
+        Returns:    
             List of LlamaIndex Document objects
         """
         documents = []
