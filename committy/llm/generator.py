@@ -29,7 +29,8 @@ class CommitMessageGenerator:
         model_config: Optional[Dict[str, Any]] = None,
         max_context_tokens: int = 4000,
         max_retries: int = 3,
-        retry_delay: int = 2
+        retry_delay: int = 2,
+        use_file_based_processing: bool = True
     ):
         """Initialize the commit message generator.
         
@@ -44,40 +45,55 @@ class CommitMessageGenerator:
         self.max_context_tokens = max_context_tokens
         self.max_retries = max_retries
         self.retry_delay = retry_delay
+        self.use_file_based_processing = use_file_based_processing
         logger.info(f"Initialized generator with model: {self.model_config['model']}")
-    
+        if self.use_file_based_processing:
+            logger.info("File-based processing enabled")
+
     def generate_from_diff(
         self,
-        diff_text: str,
-        change_type: Optional[str] = None,
-        use_specialized_template: bool = True
-    ) -> str:
+        diff_text,
+        change_type=None,
+        use_specialized_template=True
+    ):
         """Generate a commit message from a git diff.
         
         Args:
             diff_text: Git diff text
-            change_type: Optional change type (not used in simplified version)
-            use_specialized_template: Whether to use specialized templates (not used in simplified version)
-            
+            change_type: Optional change type
+            use_specialized_template: Whether to use specialized templates
+                
         Returns:
             Generated commit message
         """
         # Log information about the diff
-        logger.info(
-            f"Generating commit message for diff of length {len(diff_text)}"
+        logger.info(f"Generating commit message for diff of length {len(diff_text)}")
+        
+        # Parse the diff
+        git_diff = parse_diff(diff_text)
+        
+        # Check if we should use file-based processing
+        should_use_file_based = (
+            self.use_file_based_processing and 
+            len(git_diff.files) > 1
         )
         
-        # Get model name for template selection
-        model_name = self.model_config.get("model", "")
-        
-        # Generate a simple prompt
-        prompt = generate_prompt(diff_text, model_name)
-        
-        # Generate commit message
-        raw_message = self._generate_message(prompt)
-        
-        # Enhance and return the message
-        return enhance_commit_message(raw_message)
+        if should_use_file_based:
+            logger.info(f"Using file-based processing for {len(git_diff.files)} files")
+            return
+            # return self._process_files_sequentially(git_diff, change_type, use_specialized_template)
+        else:
+            # Use the original method for small diffs or single files
+            logger.info("Using traditional processing (single file or file-based processing disabled)")
+            
+            # Generate a simple prompt
+            prompt = generate_prompt(diff_text, self.model_config.get("model", ""))
+            
+            # Generate commit message
+            raw_message = self._generate_message(prompt)
+            
+            # Enhance and return the message
+            return enhance_commit_message(raw_message)
     
     def _build_context(self, diff_data: Dict[str, Any]) -> str:
         """Build context from diff data.

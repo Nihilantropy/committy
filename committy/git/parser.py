@@ -64,24 +64,61 @@ def split_diff_by_file(diff_text: str) -> List[str]:
     Returns:
         List of diff sections, one per file
     """
+    logger.debug("\n" + "="*80)
+    logger.debug("SPLITTING GIT DIFF BY FILE")
+    logger.debug("="*80)
+    logger.debug(f"Input diff length: {len(diff_text)} characters")
+    
     lines = diff_text.split("\n")
+    logger.debug(f"Number of lines in diff: {len(lines)}")
+    
     sections = []
     current_section = []
+    file_count = 0
     
-    for line in lines:
+    for line_num, line in enumerate(lines):
         # If we find a new file header and we already have a section, save it
         if FILE_HEADER_PATTERN.match(line) and current_section:
-            sections.append("\n".join(current_section))
+            file_count += 1
+            section_text = "\n".join(current_section)
+            sections.append(section_text)
+            logger.debug(f"\nSaved file section #{file_count} with {len(current_section)} lines")
             current_section = []
         
+        # Add line to current section
         current_section.append(line)
     
     # Add the last section if there is one
     if current_section:
-        sections.append("\n".join(current_section))
+        file_count += 1
+        section_text = "\n".join(current_section)
+        sections.append(section_text)
+        logger.debug(f"\nSaved final file section #{file_count} with {len(current_section)} lines")
+    
+    # Print complete content of each file section
+    # print("\nCOMPLETE FILE SECTIONS:")
+    # for i, section in enumerate(sections):
+    #     # Extract file path from section
+    #     section_lines = section.split("\n")
+    #     file_path = "unknown"
+    #     for line in section_lines:
+    #         match = FILE_HEADER_PATTERN.match(line)
+    #         if match:
+    #             file_path = match.group(1)
+    #             break
+        
+    #     print(f"\n{'='*40}")
+    #     print(f"FILE SECTION #{i+1}: {file_path}")
+    #     print(f"{'='*40}")
+    #     print(section)
+    #     print(f"{'='*40}")
+    #     print(f"End of file section #{i+1}\n")
+    
+    # # Print summary
+    # print("\nSUMMARY:")
+    # print(f"Split diff into {len(sections)} file sections")
     
     return sections
-
 
 def parse_file_section(section: str) -> Optional[FileChange]:
     """Parse a diff section for a single file.
