@@ -133,9 +133,11 @@ class CommitMessageGenerator:
             
         Returns:
             Generated commit message
+            
+        Raises:
+            RuntimeError: If message generation fails
         """
         attempts = 0
-        last_error = None
         
         while attempts < self.max_retries:
             try:
@@ -147,8 +149,9 @@ class CommitMessageGenerator:
                     raise ValueError("Model returned an empty response, please try again or use a different model")
                     
                 return message.strip()
+            except ConnectionError as e:
+                raise  RuntimeError(str(e))
             except Exception as e:
-                last_error = e
                 attempts += 1
                 logger.warning(
                     f"Error generating message (attempt {attempts}/{self.max_retries}): {e}"
@@ -159,8 +162,8 @@ class CommitMessageGenerator:
                     time.sleep(self.retry_delay)
         
         # If we reach here, all retries failed
-        logger.error(f"Failed to generate message after {self.max_retries} attempts: {last_error}")
-        raise RuntimeError(f"Failed to generate commit message: {last_error}")
+        logger.error(f"Failed to generate message after {self.max_retries} attempts.")
+        raise RuntimeError(f"Failed to generate commit message.")
 
     def analyze_diff(
         self, 

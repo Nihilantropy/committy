@@ -19,7 +19,7 @@ class OllamaClient:
         Args:
             host: Ollama API host. Defaults to OLLAMA_HOST env var or localhost.
         """
-        self.host = host or os.environ.get("OLLAMA_HOST", "http://localhost:11434")
+        self.host = host or os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434")
         self.timeout = int(os.environ.get("COMMITTY_TIMEOUT", "100"))
         logger.debug(f"Initialized Ollama client with host: {self.host}")
         
@@ -47,10 +47,12 @@ class OllamaClient:
         try:
             # Keep original timeout for test compatibility
             import requests
+            logger.debug(f"Checking if Ollama is running at: {self.host}/api/tags")
             response = requests.get(f"{self.host}/api/tags", timeout=2)
+            logger.debug(f"Ollama response status: {response.status_code}")
             return response.status_code == 200
-        except Exception:
-            logger.debug("Ollama service is not running")
+        except Exception as e:
+            logger.debug(f"Ollama service is not running: {str(e)}")
             return False
 
     def list_models(self) -> List[Dict[str, Any]]:

@@ -184,8 +184,9 @@ echo -e "${GREEN}Committy development setup complete!${NC}"
 echo -e "${GREEN}=======================================${NC}\n"
 
 echo -e "To use Committy:"
-echo -e "1. ${YELLOW}~/.local/bin/committy${NC} (or just ${YELLOW}committy${NC} if ~/.local/bin is in your PATH)"
-echo -e "2. Update your PATH if needed: ${YELLOW}export PATH=\$PATH:~/.local/bin${NC}"
-echo -e "3. To deactivate the virtual environment: ${YELLOW}deactivate${NC}"
+echo -e "1. Activate the virtual environment: ${YELLOW}. venv/bin/activate${NC}"
+echo -e "2. ${YELLOW}~/.local/bin/committy${NC} (or just ${YELLOW}committy${NC} if ~/.local/bin is in your PATH)"
+echo -e "3. Update your PATH if needed: ${YELLOW}export PATH=\$PATH:~/.local/bin${NC}"
+echo -e "4. To deactivate the virtual environment: ${YELLOW}deactivate${NC}"
 
 echo -e "\n${BLUE}Happy committing!${NC}"

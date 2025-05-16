@@ -69,7 +69,6 @@ class Engine:
             # Analyze diff to determine change type if not provided
             if not change_type:
                 change_type = self.analyze_changes(diff_text)
-                logger.info(f"Detected change type: {change_type}")
             
             # Generate commit message
             message = self.generate_message(diff_text, change_type, format_type, model_name)
@@ -77,7 +76,7 @@ class Engine:
             return True, message, is_staged
             
         except Exception as e:
-            logger.error(f"Error processing git diff: {e}", exc_info=True)
+            logger.error(f"Error processing git diff.", exc_info=True)
             return False, f"Error: {str(e)}", True
     
     def get_diff_from_git(self) -> Tuple[str, bool]:
