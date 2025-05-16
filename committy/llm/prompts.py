@@ -75,7 +75,7 @@ def generate_prompt(diff_text: str, model_name: Optional[str] = None) -> str:
 
 
 def enhance_commit_message(message: str) -> str:
-    """Simple post-processing to improve the commit message.
+    """Enhance and clean up a commit message.
     
     Args:
         message: Raw generated commit message
@@ -83,6 +83,30 @@ def enhance_commit_message(message: str) -> str:
     Returns:
         Enhanced commit message
     """
+    if not message:
+        return "chore: update code"  # Safe fallback for empty messages
+    
+    # Strip markdown code block delimiters
+    message = message.strip()
+    
+    # Remove opening and closing code block markers if present
+    if message.startswith("```"):
+        # Find the first newline after opening delimiter
+        first_newline = message.find("\n")
+        if first_newline != -1:
+            # Check if there's a language specifier
+            message = message[first_newline + 1:]
+        else:
+            # No newline, just remove the opening markers
+            message = message[3:]
+    
+    # Remove closing code block delimiter
+    if message.endswith("```"):
+        message = message[:-3]
+    
+    # Ensure message is properly trimmed after removal
+    message = message.strip()
+    
     # Remove leading/trailing whitespace
     message = message.strip()
     
@@ -101,6 +125,14 @@ def enhance_commit_message(message: str) -> str:
         if "[" in header and "]" in header:
             import re
             header = re.sub(r"\[(.*?)\]", r"(\1)", header)
+        
+        # Lowercase first letter of description (after type(scope):)
+        if ":" in header:
+            prefix, description = header.split(":", 1)
+            description = description.strip()
+            if description and description[0].isupper():
+                description = description[0].lower() + description[1:]
+            header = f"{prefix}: {description}"
         
         parts[0] = header
     

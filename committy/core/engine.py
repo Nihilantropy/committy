@@ -149,6 +149,8 @@ class Engine:
                 model_config=model_config,
                 use_specialized_template=(format_type == "conventional")
             )
+
+            print(f"generated message is: {message}")
             
             return message
         except Exception as e:

@@ -6,11 +6,9 @@ from git diffs using LLMs and prompt engineering.
 
 import logging
 import time
-from typing import Dict, Any, Optional, Tuple, List, Union
+from typing import Dict, Any, Optional
 
-from committy.git.models import GitDiff
 from committy.git.parser import parse_diff
-from committy.llm.index import build_prompt_from_diff
 from committy.llm.ollama import OllamaClient, get_default_model_config
 from committy.llm.prompts import (
     enhance_commit_message,
@@ -80,8 +78,7 @@ class CommitMessageGenerator:
         
         if should_use_file_based:
             logger.info(f"Using file-based processing for {len(git_diff.files)} files")
-            return
-            # return self._process_files_sequentially(git_diff, change_type, use_specialized_template)
+            return self._process_files_sequentially(git_diff, change_type, use_specialized_template)
         else:
             # Use the original method for small diffs or single files
             logger.info("Using traditional processing (single file or file-based processing disabled)")
@@ -94,53 +91,253 @@ class CommitMessageGenerator:
             
             # Enhance and return the message
             return enhance_commit_message(raw_message)
-    
-    def _build_context(self, diff_data: Dict[str, Any]) -> str:
-        """Build context from diff data.
+
+    def _process_files_sequentially(
+        self,
+        git_diff,
+        change_type=None,
+        use_specialized_template=True
+    ):
+        """Process each file in the git diff sequentially.
+        
+        This builds an understanding of the changes one file at a time,
+        generating a cohesive commit message that combines insights from all files.
         
         Args:
-            diff_data: Dictionary with git diff information
+            git_diff: Parsed GitDiff object
+            change_type: Optional change type
+            use_specialized_template: Whether to use specialized templates
+                
+        Returns:
+            Generated commit message
+        """
+        try:
+            # Create summary info about the overall diff
+            summary = self._create_diff_summary(git_diff)
+            logger.debug(f"Diff summary: {summary}")
+            
+            # Initialize context tracker
+            context = {
+                "summary": summary,
+                "processed_files": [],
+                "insights": []
+            }
+            
+            # Process each file
+            for i, file in enumerate(git_diff.files):
+                logger.info(f"Processing file {i+1}/{len(git_diff.files)}: {file.path}")
+                
+                # Generate analysis for this file
+                file_insight = self._analyze_file(file, context)
+                
+                # Update the context with this file's analysis
+                context["processed_files"].append(file.path)
+                context["insights"].append({
+                    "path": file.path,
+                    "insight": file_insight
+                })
+                
+                logger.debug(f"Generated insight for {file.path}: {file_insight[:100]}...")
+            
+            # Generate the final commit message
+            final_message = self._synthesize_commit_message(context, change_type, use_specialized_template)
+            logger.info("Generated final commit message from file-based analysis")
+            
+            return final_message
+        except Exception as e:
+            logger.error(f"Error in file-based processing: {e}", exc_info=True)
+            # Fall back to traditional processing
+            logger.info("Falling back to traditional processing")
+            prompt = generate_prompt(self._reconstruct_diff_text(git_diff), self.model_config.get("model", ""))
+            raw_message = self._generate_message(prompt)
+            return enhance_commit_message(raw_message)
+
+    def _create_diff_summary(self, git_diff):
+        """Create a summary of the entire diff.
+        
+        Args:
+            git_diff: Parsed GitDiff object
             
         Returns:
-            Context string for prompting
+            Summary string
         """
-        # Use LlamaIndex to extract context
-        return build_prompt_from_diff(diff_data, self.max_context_tokens)
-    
-    def _build_prompt(
-        self,
-        context: str,
-        change_type: Optional[str] = None,
-        model_name: Optional[str] = None,
-        use_specialized_template: bool = True
-    ) -> str:
-        """Build an optimized prompt for the LLM.
+        return f"""
+    Diff Summary:
+    - Changed Files: {len(git_diff.files)}
+    - Additions: {git_diff.summary.total_additions}
+    - Deletions: {git_diff.summary.total_deletions}
+    - Languages: {', '.join(git_diff.summary.languages)}
+    """
+
+    def _analyze_file(self, file, context):
+        """Analyze a single file in the diff.
         
         Args:
-            context: Diff context
+            file: FileChange object
+            context: Current context dictionary
+            
+        Returns:
+            Insight string for this file
+        """
+        # Create a prompt focused on this file
+        prompt = self._create_file_analysis_prompt(file, context)
+        
+        # Generate insight
+        insight = self._generate_message(prompt)
+        
+        return insight
+
+    def _create_file_analysis_prompt(self, file, context):
+        """Create a prompt for analyzing a specific file.
+        
+        Args:
+            file: FileChange object
+            context: Current context dictionary
+            
+        Returns:
+            Prompt string
+        """
+        summary = context["summary"]
+        processed_files = context["processed_files"]
+        
+        # Build file context
+        file_context = f"""
+    # File Analysis Task
+    Analyze this specific file from a git diff and describe what changed.
+
+    ## File: {file.path}
+    Type: {file.language}
+    Change: {file.change_type}
+    Added lines: {file.additions}
+    Removed lines: {file.deletions}
+
+    ## Overall Context
+    {summary}
+
+    ## Diff Content
+    ```diff
+    {file.diff_content}
+    ```
+    """
+        
+        # Add previous file contexts if available
+        if processed_files:
+            file_context += "\n## Already Processed Files\n"
+            for path in processed_files:
+                file_context += f"- {path}\n"
+        
+        # Add instructions
+        file_context += """
+    ## Instructions
+    1. Describe what changed in this specific file
+    2. Explain why these changes were likely made
+    3. Focus on the most significant changes
+    4. Be concise but informative
+    """
+        
+        return file_context
+
+    def _synthesize_commit_message(self, context, change_type=None, use_specialized_template=True):
+        """Synthesize a final commit message from the file insights.
+        
+        Args:
+            context: Context dictionary with file insights
             change_type: Optional change type
-            model_name: Model name for size-based optimization
             use_specialized_template: Whether to use specialized templates
             
         Returns:
-            Optimized prompt for the LLM
+            Final commit message
         """
-        # Detect change type if not provided and specialized templates are requested
-        if change_type is None and use_specialized_template:
-            change_type = detect_likely_change_type(context)
-            logger.info(f"Detected change type: {change_type or 'unknown'}")
+        # Create synthesis prompt
+        synthesis_prompt = self._create_synthesis_prompt(context, change_type)
         
-        # Use specialized templates only if requested and change type is available
-        if not use_specialized_template:
-            change_type = None
+        # Generate final message
+        raw_message = self._generate_message(synthesis_prompt)
+        
+        # Enhance and return
+        return enhance_commit_message(raw_message)
+
+    def _create_synthesis_prompt(self, context, change_type=None):
+        """Create a prompt for synthesizing file insights into a commit message.
+        
+        Args:
+            context: Context dictionary with file insights
+            change_type: Optional change type
             
-        # Generate the optimized prompt using our new function
-        # This will automatically handle model size and template selection
-        prompt = generate_commit_prompt(context, change_type, model_name)
+        Returns:
+            Synthesis prompt
+        """
+        summary = context["summary"]
+        insights = context["insights"]
         
-        logger.debug(f"Generated prompt for model {model_name or 'default'} with change type {change_type or 'generic'}")
+        # Build the synthesis prompt
+        prompt = f"""
+    # Commit Message Generation Task
+    Create a commit message that describes all the changes across multiple files.
+
+    ## Overall Changes
+    {summary}
+
+    ## File-specific Changes
+    """
+        
+        # Add insights for each file
+        for insight in insights:
+            prompt += f"\n### {insight['path']}\n{insight['insight']}\n"
+        
+        # Add instructions for commit format
+        prompt += """
+    ## Instructions
+    1. Generate a commit message in the Conventional Commits format:
+    <type>(<scope>): <description>
+
+    [optional body]
+
+    [optional footer]
+
+    2. The type should be one of: feat, fix, docs, style, refactor, perf, test, build, ci, chore
+    """
+        
+        # Add change type if provided
+        if change_type:
+            prompt += f"\n   Use '{change_type}' as the type."
+        else:
+            prompt += "\n   Choose the most appropriate type based on the changes."
+        
+        # Add more formatting instructions
+        prompt += """
+    3. The scope should reflect the primary component or area changed.
+    4. The description should be concise and in imperative mood ("add", not "added").
+    5. Add a body with more details about the changes if necessary.
+    6. Keep the message professional and focused on the substance of the changes.
+    """
+        
         return prompt
-    
+
+    def _reconstruct_diff_text(self, git_diff):
+        """Reconstruct the full diff text from a GitDiff object.
+        
+        Used as a fallback if file-based processing fails.
+        
+        Args:
+            git_diff: Parsed GitDiff object
+            
+        Returns:
+            Reconstructed diff text
+        """
+        diff_parts = []
+        for file in git_diff.files:
+            diff_parts.append(f"diff --git a/{file.path} b/{file.path}")
+            if file.change_type == "added":
+                diff_parts.append(f"new file mode 100644")
+            elif file.change_type == "deleted":
+                diff_parts.append(f"deleted file mode 100644")
+            diff_parts.append(f"--- a/{file.path}")
+            diff_parts.append(f"+++ b/{file.path}")
+            diff_parts.append(file.diff_content)
+        
+        return "\n".join(diff_parts)
+
     def _generate_message(self, prompt: str) -> str:
         """Generate a commit message using the LLM.
         
@@ -166,7 +363,7 @@ class CommitMessageGenerator:
                     
                 return message.strip()
             except ConnectionError as e:
-                raise  RuntimeError(str(e))
+                raise RuntimeError(str(e))
             except Exception as e:
                 attempts += 1
                 logger.warning(
@@ -179,41 +376,7 @@ class CommitMessageGenerator:
         
         # If we reach here, all retries failed
         logger.error(f"Failed to generate message after {self.max_retries} attempts.")
-        raise RuntimeError(f"Failed to generate commit message.")
-
-    def analyze_diff(
-        self, 
-        diff_text: str
-    ) -> Dict[str, Any]:
-        """Analyze diff for key information.
-        
-        Args:
-            diff_text: Git diff text
-            
-        Returns:
-            Dictionary with analysis results
-        """
-        # Parse diff
-        git_diff = parse_diff(diff_text)
-        
-        # Build basic analysis
-        analysis = {
-            "files_changed": len(git_diff.files),
-            "additions": git_diff.summary.total_additions,
-            "deletions": git_diff.summary.total_deletions,
-            "languages": git_diff.summary.languages,
-            "file_types": self._get_file_types(git_diff),
-            "change_categories": self._categorize_changes(git_diff),
-        }
-        
-        # Determine likely change type
-        context = self._build_context(git_diff.as_dict())
-        analysis["likely_change_type"] = detect_likely_change_type(context)
-        
-        return analysis
-    
-    # [rest of the class methods remain unchanged]
-
+        raise RuntimeError("Failed to generate commit message.")
 
 def generate_commit_message(
     diff_text: str,

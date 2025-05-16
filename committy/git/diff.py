@@ -205,6 +205,30 @@ def is_git_repository(path: Optional[str] = None) -> bool:
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
         return False
+    
+def push() -> bool:
+    """Push committed changes to the remote repository.
+    
+    Returns:
+        True if push was successful, False otherwise
+    """
+    try:
+        # Check if we're in a git repository
+        if not is_git_repository():
+            logger.error("Not a git repository")
+            return False
+        
+        # Get current branch
+        current_branch = _run_git_command(["branch", "--show-current"]).strip()
+        
+        # Push to remote
+        _run_git_command(["push", "origin", current_branch])
+        
+        logger.info(f"Successfully pushed to branch {current_branch}")
+        return True
+    except Exception as e:
+        logger.error(f"Error pushing changes: {e}", exc_info=True)
+        return False
 
 
 def _run_git_command(args: List[str]) -> str:

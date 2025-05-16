@@ -1,0 +1,53 @@
+[11:48:48] DEBUG    Logging initialized with verbosity level 1                                                                                                                                                  main.py:80
+           INFO     Loaded configuration from /home/crea/.config/committy/config.yml                                                                                                                          config.py:69
+
+Active Configuration:
+       Configuration Values       
+┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━┓
+┃ Option          ┃ Value        ┃
+┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━┩
+│ editor          │ None         │
+│ format          │ conventional │
+│ max_tokens      │ 256          │
+│ model           │ gemma3:12b   │
+│ no_confirm      │ false        │
+│ prompt_template │ enhanced     │
+│ temperature     │ 0.2          │
+│ with_scope      │ true         │
+└─────────────────┴──────────────┘
+           INFO     Loaded configuration from /home/crea/.config/committy/config.yml                                                                                                                          config.py:69
+           INFO     Committy engine initialized                                                                                                                                                               engine.py:33
+           DEBUG    Found staged changes                                                                                                                                                                        diff.py:36
+           DEBUG    Found unstaged changes                                                                                                                                                                      diff.py:49
+           INFO     Processing git diff                                                                                                                                                                       engine.py:61
+           DEBUG    Change type: None, Format: conventional, Model: None                                                                                                                                      engine.py:62
+           DEBUG    Detected change type: fix                                                                                                                                                                engine.py:113
+           INFO     Detected change type: fix                                                                                                                                                                 engine.py:67
+           DEBUG    Initialized Ollama client with host: http://127.0.0.1:11434                                                                                                                               ollama.py:24
+           INFO     Initialized generator with model: gemma3:12b                                                                                                                                           generator.py:49
+           INFO     File-based processing enabled                                                                                                                                                          generator.py:51
+           INFO     Generating commit message for diff of length 9663                                                                                                                                      generator.py:70
+           DEBUG                                                                                                                                                                                              parser.py:67
+                    ================================================================================                                                                                                                      
+           DEBUG    SPLITTING GIT DIFF BY FILE                                                                                                                                                                parser.py:68
+           DEBUG    ================================================================================                                                                                                          parser.py:69
+           DEBUG    Input diff length: 9663 characters                                                                                                                                                        parser.py:70
+           DEBUG    Number of lines in diff: 235                                                                                                                                                              parser.py:73
+           DEBUG                                                                                                                                                                                              parser.py:85
+                    Saved file section #1 with 199 lines                                                                                                                                                                  
+           DEBUG                                                                                                                                                                                              parser.py:96
+                    Saved final file section #2 with 36 lines                                                                                                                                                             
+           DEBUG    Detected language for committy/cli/main.py: Python (by extension .py)                                                                                                                  language.py:136
+           DEBUG    Detected language for committy/git/diff.py: Python (by extension .py)                                                                                                                  language.py:136
+           INFO     Parsed diff with 2 files, 114 additions, 73 deletions                                                                                                                                     parser.py:49
+           INFO     Using file-based processing for 2 files                                                                                                                                                generator.py:82
+Generated commit message is empty. Using fallback message.
+           INFO     Commit message generated in 0.03 seconds                                                                                                                                                   main.py:460
+
+Generated commit message:
+╭────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ chore: update code                                                                                                                                                                                                     │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+
+What would you like to do? [C]ommit / [E]dit / [D]iscard: 
+Operation cancelled by user

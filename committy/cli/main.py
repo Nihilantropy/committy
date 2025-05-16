@@ -412,104 +412,121 @@ def handle_command(parsed_args: Dict[str, Any]) -> int:
         ]):
             return 0
     
-    # Process git diff and generate commit message
     try:
-        # Extract options
-        options = {
-            "diff_text": None,  # Will be obtained from git
-            "change_type": None,  # Will be detected
-            "format_type": parsed_args.get("format", "conventional"),
-            "model": parsed_args.get("model")
-        }
+        # Create engine instance
+        engine = Engine(config_path=config_path)
         
-        with console.status("[info]Analyzing changes...[/]", spinner="dots") as status:
-            # Process the diff
-            start_time = time.time()  # Start measuring time
+        # Handle analysis mode
+        if parsed_args.get("analyze"):
+            try:
+                # Get changes
+                diff_text = engine.get_changes()
+                # Display analysis
+                display_diff_analysis(diff_text)
+                return 0
+            except Exception as e:
+                console.print(f"[error]{str(e)}[/]")
+                return 1
+        
+        # Process the diff and generate a commit message
+        with console.status("[info]Analyzing changes and generating commit message...[/]", spinner="dots") as status:
+            start_time = time.time()
             
-            # Try to process diff directly - this will now check for both staged and unstaged
-            success, result, is_staged = process_diff(
-                config_path=parsed_args.get("config"),
-                format_type=parsed_args.get("format", "conventional"),
-                model_name=parsed_args.get("model")
-            )
+            # Process options
+            options = {
+                "diff_text": None,  # Will use engine.get_changes()
+                "change_type": None,  # Auto-detect
+                "format_type": parsed_args.get("format", "conventional"),
+                "model": parsed_args.get("model")
+            }
             
-            # Stop timer
+            # Generate commit message
+            success, result = engine.process(options)
+            
             elapsed = time.time() - start_time
             status.stop()
-
+        
+        # Handle error
         if not success:
             console.print(f"[error]{result}[/]")
             return 1
-
+        
+        # Check for None result and provide a default
+        if result is None:
+            console.print("[warning]Generated commit message is empty. Using fallback message.[/]")
+            result = "chore: update code"
+        
         # Log generation time
         logger.info(f"Commit message generated in {elapsed:.2f} seconds")
-
-        # Handle staged vs unstaged changes differently
-        if not is_staged:
-            # For unstaged changes, prompt user for action
-            action = prompt_for_unstaged_action(result)
+        
+        # In dry-run mode, just display the message and exit
+        if parsed_args.get("dry_run"):
+            syntax = Syntax(
+                result,
+                "markdown",
+                theme="monokai",
+                line_numbers=False,
+                word_wrap=True
+            )
+            console.print("\n[bold]Generated commit message (dry run):[/]")
+            console.print(Panel(syntax))
+            console.print(f"[info]Generation took {elapsed:.2f} seconds[/]")
+            return 0
+        
+        # Interactive confirmation loop
+        while True:
+            # Display the message
+            syntax = Syntax(
+                result,
+                "markdown",
+                theme="monokai",
+                line_numbers=False,
+                word_wrap=True
+            )
+            console.print("\n[bold]Generated commit message:[/]")
+            console.print(Panel(syntax))
             
-            if action == "stage":
-                with console.status("[info]Staging and committing changes...[/]", spinner="dots") as status:
-                    engine = Engine(config_path=parsed_args.get("config"))
-
-                    commit_success = engine.stage_and_commit(result)
+            # Prompt for action
+            action = console.input("\nWhat would you like to do? [C]ommit / [E]dit / [D]iscard: ").strip().lower()
+            
+            if action in ["c", "commit"]:
+                # Commit the changes
+                with console.status("[info]Committing changes...[/]", spinner="dots") as status:
+                    # Stage all changes and commit
+                    commit_success = engine.commit(result, stage_all=True)
                     status.stop()
                 
                 if commit_success:
-                    console.print("[success]Changes staged and committed successfully![/]")
+                    console.print("[success]Changes committed successfully![/]")
                     return 0
                 else:
-                    console.print("[error]Failed to stage and commit changes[/]")
+                    console.print("[error]Failed to commit changes[/]")
                     return 1
-            else:  # action == "discard"
-                console.print("[info]Commit message discarded.[/]")
-                return 0
-        else:
-            # For staged changes, continue with normal flow (dry run, edit, confirm, commit)
-            # Dry run mode just prints the message
-            if parsed_args.get("dry_run"):
-                syntax = Syntax(
-                    result,
-                    "markdown",
-                    theme="monokai",
-                    line_numbers=False,
-                    word_wrap=True
-                )
-                console.print("\n[bold]Generated commit message (dry run):[/]")
-                console.print(Panel(syntax))
-                console.print(f"[info]Generation took {elapsed:.2f} seconds[/]")
-                return 0
-            
-            # Automatically open in editor if requested
-            if parsed_args.get("edit"):
-                result = open_editor(result)
-            
-            # Prompt for confirmation unless --no-confirm
-            if not parsed_args.get("no_confirm"):
-                confirmed, result = prompt_confirmation(result)
-                if not confirmed:
-                    console.print("[warning]Commit cancelled[/]")
-                    return 0
-            
-            # Execute the commit
-            with console.status("[info]Committing changes...[/]", spinner="dots") as status:
-                engine = Engine(config_path=parsed_args.get("config"))
-                commit_success = engine.execute_commit(result)
-                status.stop()
                 
-            if commit_success:
-                console.print("[success]Commit successful![/]")
+            elif action in ["e", "edit"]:
+                # Open the message in an editor
+                edited_message = open_editor(result)
+                if edited_message.strip():
+                    result = edited_message
+                    console.print("[info]Message updated in editor.[/]")
+                else:
+                    console.print("[warning]Editor returned empty message. Using original message.[/]")
+                
+                # Continue the loop to display the updated message and prompt again
+                
+            elif action in ["d", "discard"]:
+                # Discard the message and exit
+                console.print("[info]Changes not committed. Exiting.[/]")
                 return 0
+                
             else:
-                console.print("[error]Failed to execute commit[/]")
-                return 1
-        
+                console.print("[warning]Invalid choice. Please enter C, E, or D.[/]")
+    
     except KeyboardInterrupt:
         console.print("\n[warning]Operation cancelled by user[/]")
         return 1
     except Exception as e:
-        logger.error(f"Error: {e}", exc_info=parsed_args.get("verbose", 0))
+        logger.error(f"Error: {e}", exc_info=parsed_args.get("verbose", 0) > 0)
         console.print(f"[error]Error: {str(e)}[/]")
         if parsed_args.get("verbose", 0) > 0:
             logger.exception("Detailed exception information:")
