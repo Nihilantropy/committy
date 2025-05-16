@@ -6,7 +6,6 @@ coordinating the git diff parsing, LLM integration, and commit message generatio
 
 import logging
 import os
-from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Any, Union
 
 from committy.git.parser import parse_diff
@@ -49,7 +48,7 @@ class Engine:
                 - result: Generated commit message or error message
         """
         try:
-            # Extract options
+            # Extract options with defaults from config
             diff_text = options.get("diff_text")
             change_type = options.get("change_type")
             format_type = options.get("format_type", self.config.get("format", "conventional"))
@@ -57,17 +56,15 @@ class Engine:
             
             # Get the diff text if not provided
             if not diff_text:
-                diff_text = self.get_diff_from_git()
-                if not diff_text:
-                    return False, "No staged changes found"
-            
+                diff_text = self.get_changes()
+                
             logger.info("Processing git diff")
             logger.debug(f"Change type: {change_type}, Format: {format_type}, Model: {model_name}")
             
             # Analyze diff to determine change type if not provided
             if not change_type:
                 change_type = self.analyze_changes(diff_text)
-                logger.info(f"Detected change type: {change_type}")
+                logger.info(f"Detected change type: {change_type or 'unknown'}")
             
             # Generate commit message
             message = self.generate_message(diff_text, change_type, format_type, model_name)
@@ -75,25 +72,34 @@ class Engine:
             return True, message
             
         except Exception as e:
-            logger.error(f"Error processing git diff: {e}", exc_info=True)
-            return False, f"Error: {str(e)}"
+            logger.error(f"Error processing git diff: {str(e)}", exc_info=True)
+            return False, self.handle_error(e)
     
-    def get_diff_from_git(self) -> str:
-        """Get diff from git staged changes.
+    def get_changes(self) -> str:
+        """Get all relevant changes from git.
         
         Returns:
-            Git diff text
+            Git diff text of changes
+            
+        Raises:
+            RuntimeError: If no changes are found or git command fails
         """
         try:
             # Import here to avoid circular imports
-            from committy.git.diff import get_diff
-            return get_diff()
+            from committy.git.diff import get_all_changes
+            
+            diff = get_all_changes()
+            if not diff:
+                raise RuntimeError("No changes found")
+                
+            return diff
+                    
         except Exception as e:
-            logger.error(f"Error getting git diff: {e}", exc_info=True)
-            raise RuntimeError(f"Failed to get git diff: {e}")
+            logger.error(f"Error getting git changes: {e}", exc_info=True)
+            raise RuntimeError(f"Failed to get git changes: {str(e)}")
     
     def analyze_changes(self, diff_text: str) -> Optional[str]:
-        """Analyze changes to determine commit type and scope.
+        """Analyze changes to determine commit type.
         
         Args:
             diff_text: Git diff text
@@ -102,17 +108,9 @@ class Engine:
             Detected change type or None if could not be determined
         """
         try:
-            # Parse the diff
-            git_diff = parse_diff(diff_text)
-            
-            # Use prompt detection from existing code
             from committy.llm.prompts import detect_likely_change_type
-            from committy.llm.index import build_prompt_from_diff
-            
-            # Build context and detect change type
-            context = build_prompt_from_diff(git_diff.as_dict())
-            change_type = detect_likely_change_type(context)
-            
+            change_type = detect_likely_change_type(diff_text)
+            logger.debug(f"Detected change type: {change_type or 'unknown'}")
             return change_type
         except Exception as e:
             logger.warning(f"Error analyzing changes: {e}", exc_info=True)
@@ -132,7 +130,7 @@ class Engine:
             change_type: Optional change type
             format_type: Format type for commit message
             model_name: Optional model name
-            
+                
         Returns:
             Generated commit message
         """
@@ -151,11 +149,12 @@ class Engine:
                 model_config=model_config,
                 use_specialized_template=(format_type == "conventional")
             )
+
+            print(f"generated message is: {message}")
             
             return message
         except Exception as e:
             logger.error(f"Error generating commit message: {e}", exc_info=True)
-            # Fallback to a basic message if LLM fails
             return self.fallback_message(diff_text, change_type)
     
     def fallback_message(self, diff_text: str, change_type: Optional[str] = None) -> str:
@@ -194,22 +193,31 @@ class Engine:
             logger.error(f"Error generating fallback message: {e}", exc_info=True)
             # Ultra basic fallback
             return "chore: update code"
-    
-    def execute_commit(self, message: str) -> bool:
-        """Execute git commit with generated message.
+
+    def commit(self, message: str, stage_all: bool = False) -> bool:
+        """Commit changes with the provided message.
         
         Args:
             message: Commit message
+            stage_all: Whether to stage all changes before committing
             
         Returns:
             True if commit was successful
         """
         try:
             # Import here to avoid circular imports
-            from committy.git.diff import commit
+            from committy.git.diff import commit, stage_all as stage_all_changes
+            
+            # Stage all changes if requested
+            if stage_all:
+                if not stage_all_changes():
+                    logger.error("Failed to stage changes")
+                    return False
+                    
+            # Commit with the message
             return commit(message)
         except Exception as e:
-            logger.error(f"Error executing commit: {e}", exc_info=True)
+            logger.error(f"Error committing changes: {e}", exc_info=True)
             return False
     
     def handle_error(self, error: Exception) -> str:
@@ -221,28 +229,28 @@ class Engine:
         Returns:
             User-friendly error message
         """
-        logger.error(f"Error: {error}", exc_info=True)
+        error_str = str(error)
         
         # Check for specific error types
-        if "Could not connect to Ollama" in str(error):
+        if "Could not connect to Ollama" in error_str:
             return (
                 "Error: Could not connect to Ollama service.\n"
                 "Please ensure Ollama is installed and running.\n"
                 "See docs/OLLAMA_SETUP.md for installation instructions."
             )
-        elif "Model not found" in str(error) or "Model not available" in str(error):
+        elif "Model not found" in error_str or "Model not available" in error_str:
             return (
                 "Error: The specified model is not available in Ollama.\n"
                 "Please download it first or choose a different model.\n"
                 "See docs/OLLAMA_SETUP.md for more information."
             )
-        elif "No staged changes found" in str(error):
+        elif "No changes found" in error_str:
             return (
-                "Error: No staged changes found. Please stage your changes first:\n"
-                "git add <files>"
+                "Error: No changes found in your repository.\n"
+                "Make some changes to files before generating a commit message."
             )
         else:
-            return f"Error: {str(error)}"
+            return f"Error: {error_str}"
 
 
 def process_diff(

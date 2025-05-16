@@ -1,6 +1,6 @@
 # Prompt Engineering for Commit Messages
 
-This document outlines the strategies and templates used for generating high-quality commit messages in AutoCommit.
+This document outlines the strategies and templates used for generating high-quality commit messages in Committy.
 
 ## 1. Prompt Engineering Goals
 
@@ -25,7 +25,7 @@ All our prompt templates follow this general structure:
 
 ## 3. Specialized Templates
 
-AutoCommit uses specialized templates for different types of changes:
+Committy uses specialized templates for different types of changes:
 
 ### 3.1 Feature Addition Template
 
@@ -61,7 +61,7 @@ Specialized for documentation changes:
 
 ## 4. Change Type Detection
 
-AutoCommit attempts to automatically detect the type of change to select the appropriate template:
+Committy attempts to automatically detect the type of change to select the appropriate template:
 
 1. **Keyword Analysis**: Scan the diff context for keywords associated with each change type
 2. **File Pattern Recognition**: Use file paths to identify test files, documentation, etc.
@@ -99,7 +99,7 @@ The prompts contain domain-specific knowledge:
 
 ## 6. Post-Processing
 
-After generating the commit message, AutoCommit applies post-processing for quality assurance:
+After generating the commit message, Committy applies post-processing for quality assurance:
 
 1. **Format Verification**: Ensure adherence to Conventional Commits format
 2. **Case Normalization**: Convert description to lowercase per convention

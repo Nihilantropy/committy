@@ -1,1 +1,1 @@
-"""Test package for AutoCommit."""
+"""Test package for Committy."""

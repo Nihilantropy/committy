@@ -9,32 +9,69 @@ from typing import List, Optional
 logger = logging.getLogger(__name__)
 
 
-def get_diff() -> str:
-    """Get git diff of staged changes.
+def get_all_changes() -> str:
+    """Get all changes (staged and unstaged) from git.
     
     Returns:
-        Git diff text of staged changes
-    
+        Git diff text including both staged and unstaged changes
+        
     Raises:
-        RuntimeError: If git command fails or no git repository is found
+        RuntimeError: If git command fails or no changes are found
     """
     try:
         # Check if we're in a git repository
         if not is_git_repository():
             raise RuntimeError("Not a git repository")
         
-        # Get staged changes
-        diff_text = _run_git_command(["diff", "--cached"])
+        # First try to get staged changes
+        staged_changes = ""
+        try:
+            staged_changes = _run_git_command([
+                "diff", 
+                "--staged", 
+                "--patch", 
+                "--unified=3", 
+                "--no-color"
+            ])
+            logger.debug("Found staged changes")
+        except Exception:
+            logger.debug("No staged changes found")
         
-        if not diff_text:
-            # No staged changes
-            logger.warning("No staged changes found")
-            raise RuntimeError("No staged changes found")
+        # Then try to get unstaged changes
+        unstaged_changes = ""
+        try:
+            unstaged_changes = _run_git_command([
+                "diff", 
+                "--patch", 
+                "--unified=3", 
+                "--no-color"
+            ])
+            logger.debug("Found unstaged changes")
+        except Exception:
+            logger.debug("No unstaged changes found")
+        
+        # Combine changes (staged first, then unstaged)
+        all_changes = ""
+        if staged_changes:
+            all_changes += staged_changes
+        if unstaged_changes:
+            # Add a separator if we already have staged changes
+            if all_changes:
+                all_changes += "\n\n"
+            all_changes += unstaged_changes
+        
+        # Check if we have any changes
+        if not all_changes:
+            logger.info("No changes found (staged or unstaged)")
+            raise RuntimeError("No changes found")
             
-        return diff_text
+        return all_changes
+    except RuntimeError:
+        # Re-raise specific runtime errors
+        raise
     except Exception as e:
-        logger.error(f"Error getting git diff: {e}", exc_info=True)
-        raise RuntimeError(f"Failed to get git diff: {str(e)}")
+        logger.error(f"Error getting git changes: {e}")
+        raise RuntimeError(f"Failed to get git changes: {str(e)}")
 
 
 def get_unstaged_diff() -> str:
@@ -52,7 +89,12 @@ def get_unstaged_diff() -> str:
             raise RuntimeError("Not a git repository")
         
         # Get unstaged changes
-        diff_text = _run_git_command(["diff"])
+        diff_text = _run_git_command([
+            "diff", 
+            "--patch", 
+            "--unified=3", 
+            "--no-color"
+        ])
         
         if not diff_text:
             # No unstaged changes
@@ -64,6 +106,26 @@ def get_unstaged_diff() -> str:
         logger.error(f"Error getting unstaged git diff: {e}", exc_info=True)
         raise RuntimeError(f"Failed to get unstaged git diff: {str(e)}")
 
+def stage_all() -> bool:
+    """Stage all changes.
+    
+    Returns:
+        True if staging was successful, False otherwise
+    """
+    try:
+        # Check if we're in a git repository
+        if not is_git_repository():
+            logger.error("Not a git repository")
+            return False
+        
+        # Stage all changes
+        _run_git_command(["add", "-A"])
+        
+        logger.info("All changes staged")
+        return True
+    except Exception as e:
+        logger.error(f"Error staging changes: {e}", exc_info=True)
+        return False
 
 def get_changed_files() -> List[str]:
     """Get list of staged files.
@@ -142,6 +204,30 @@ def is_git_repository(path: Optional[str] = None) -> bool:
         
         return True
     except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+    
+def push() -> bool:
+    """Push committed changes to the remote repository.
+    
+    Returns:
+        True if push was successful, False otherwise
+    """
+    try:
+        # Check if we're in a git repository
+        if not is_git_repository():
+            logger.error("Not a git repository")
+            return False
+        
+        # Get current branch
+        current_branch = _run_git_command(["branch", "--show-current"]).strip()
+        
+        # Push to remote
+        _run_git_command(["push", "origin", current_branch])
+        
+        logger.info(f"Successfully pushed to branch {current_branch}")
+        return True
+    except Exception as e:
+        logger.error(f"Error pushing changes: {e}", exc_info=True)
         return False
 
 

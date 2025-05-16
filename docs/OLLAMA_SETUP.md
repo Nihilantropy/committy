@@ -1,10 +1,10 @@
 # Ollama Setup Guide
 
-This document provides instructions for installing, configuring, and testing Ollama for use with AutoCommit.
+This document provides instructions for installing, configuring, and testing Ollama for use with Committy.
 
 ## Prerequisites
 
-AutoCommit requires Ollama to be installed and running with the necessary models already downloaded. This setup must be completed **before** running AutoCommit.
+Committy requires Ollama to be installed and running with the necessary models already downloaded. This setup must be completed **before** running Committy.
 
 ## 1. Installing Ollama
 
@@ -30,7 +30,7 @@ If the script doesn't work, you can manually install Ollama:
 
 ## 2. Starting the Ollama Service
 
-Ollama needs to run as a service to respond to API requests. You must start this service before running AutoCommit:
+Ollama needs to run as a service to respond to API requests. You must start this service before running Committy:
 
 ```bash
 # Start Ollama service
@@ -46,7 +46,7 @@ nohup ollama serve > ollama.log 2>&1 &
 
 ## 3. Installing Models
 
-AutoCommit uses the Gemma3:12b model by default, but this can be changed via environment variables. You must download your chosen model before running AutoCommit:
+Committy uses the Gemma3:12b model by default, but this can be changed via environment variables. You must download your chosen model before running Committy:
 
 ### 3.1 Default Model Installation
 
@@ -71,17 +71,17 @@ For higher quality results (requiring more resources):
 ollama pull llama3:70b
 ```
 
-## 4. Configuring AutoCommit
+## 4. Configuring Committy
 
-AutoCommit uses environment variables to configure Ollama integration:
+Committy uses environment variables to configure Ollama integration:
 
 | Variable | Description | Default Value |
 |----------|-------------|---------------|
 | `OLLAMA_MODEL` | Model to use | `gemma3:12b` |
 | `OLLAMA_HOST` | Ollama API host | `http://localhost:11434` |
-| `AUTOCOMMIT_TEMP` | Generation temperature | `0.2` |
-| `AUTOCOMMIT_MAX_TOKENS` | Max tokens to generate | `256` |
-| `AUTOCOMMIT_TIMEOUT` | Request timeout (seconds) | `10` |
+| `COMMITTY_TEMP` | Generation temperature | `0.2` |
+| `COMMITTY_MAX_TOKENS` | Max tokens to generate | `256` |
+| `COMMITTY_TIMEOUT` | Request timeout (seconds) | `10` |
 
 Example usage:
 
@@ -90,7 +90,7 @@ Example usage:
 export OLLAMA_MODEL=phi3:mini
 
 # Change temperature (higher = more creative)
-export AUTOCOMMIT_TEMP=0.4
+export COMMITTY_TEMP=0.4
 ```
 
 ## 5. Verification Script
@@ -106,7 +106,7 @@ pytest tests/llm/test_ollama.py -v
 
 ### 6.1 Connection Errors
 
-If AutoCommit reports that it can't connect to Ollama:
+If Committy reports that it can't connect to Ollama:
 - Ensure the Ollama service is running with `ps aux | grep ollama`
 - Check if Ollama is listening on the expected port with `netstat -tuln | grep 11434`
 - Try restarting the Ollama service with `ollama serve`
@@ -144,7 +144,7 @@ Save this to a file named `Modelfile` and run:
 ollama create commit-generator -f Modelfile
 ```
 
-Then use it with AutoCommit:
+Then use it with Committy:
 
 ```bash
 export OLLAMA_MODEL=commit-generator

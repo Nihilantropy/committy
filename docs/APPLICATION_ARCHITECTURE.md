@@ -1,10 +1,10 @@
-# AutoCommit Application Architecture
+# Committy Application Architecture
 
-This document outlines the architecture design for AutoCommit, including the command-line interface, application flow, component structure, and module interfaces.
+This document outlines the architecture design for Committy, including the command-line interface, application flow, component structure, and module interfaces.
 
 ## 1. Command-Line Interface Design
 
-AutoCommit provides a seamless CLI experience that integrates with git workflows while offering configuration options and powerful features.
+Committy provides a seamless CLI experience that integrates with git workflows while offering configuration options and powerful features.
 
 ### 1.1 Primary Commands
 
@@ -46,7 +46,7 @@ Manage configuration without editing the config file directly.
 ```
 committy model [list|download|update|info] [model_name]
 ```
-Manage Ollama models used by AutoCommit.
+Manage Ollama models used by Committy.
 
 ### 1.4 Output Format
 
@@ -150,7 +150,7 @@ The application incorporates comprehensive error handling:
 
 ```
 ┌───────────────────────────────────────────────────────────────────┐
-│ AutoCommit Application                                             │
+│ Committy Application                                             │
 │                                                                    │
 │  ┌─────────────┐    ┌─────────────┐    ┌─────────────────────┐    │
 │  │   CLI       │    │   Core      │    │   Git Integration   │    │
@@ -222,7 +222,7 @@ The application incorporates comprehensive error handling:
 
 ```python
 class CLI:
-    """Command-line interface for AutoCommit."""
+    """Command-line interface for Committy."""
     
     def parse_args(self, args: list[str]) -> dict:
         """Parse command-line arguments."""
@@ -244,7 +244,7 @@ class CLI:
 
 ```python
 class Config:
-    """Configuration manager for AutoCommit."""
+    """Configuration manager for Committy."""
     
     def load(self, config_path: Optional[str] = None) -> dict:
         """Load configuration from file."""
@@ -266,7 +266,7 @@ class Config:
 
 ```python
 class GitIntegration:
-    """Git integration for AutoCommit."""
+    """Git integration for Committy."""
     
     def get_repository(self, path: Optional[str] = None) -> GitRepo:
         """Get git repository object."""
@@ -291,7 +291,7 @@ class GitIntegration:
 
 ```python
 class LLMIntegration:
-    """LLM integration for AutoCommit."""
+    """LLM integration for Committy."""
     
     def build_prompt(self, diff_data: dict, format_type: str) -> str:
         """Build prompt for LLM based on diff data."""
@@ -314,7 +314,7 @@ class LLMIntegration:
 
 ```python
 class Formatter:
-    """Commit message formatter for AutoCommit."""
+    """Commit message formatter for Committy."""
     
     def format_message(self, message_parts: dict, format_type: str) -> str:
         """Format commit message according to specified format."""
@@ -333,7 +333,7 @@ class Formatter:
 
 ```python
 class OllamaIntegration:
-    """Ollama integration for AutoCommit."""
+    """Ollama integration for Committy."""
     
     def is_installed(self) -> bool:
         """Check if Ollama is installed."""
@@ -356,7 +356,7 @@ class OllamaIntegration:
 
 ```python
 class Engine:
-    """Core engine for AutoCommit."""
+    """Core engine for Committy."""
     
     def process(self, options: dict) -> tuple[bool, str]:
         """Process git diff and generate commit message."""

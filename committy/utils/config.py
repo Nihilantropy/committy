@@ -178,7 +178,7 @@ def _load_from_env() -> Dict[str, Any]:
         "COMMITTY_FORMAT": "format",
         "COMMITTY_MAX_TOKENS": "max_tokens",
         "COMMITTY_TEMP": "temperature",
-        "AUTOCOMMIT_TEMP": "temperature",  # For backward compatibility
+        "COMMITTY_TEMP": "temperature",  # For backward compatibility
         "COMMITTY_NO_CONFIRM": "no_confirm",
         "COMMITTY_WITH_SCOPE": "with_scope",
         "COMMITTY_EDITOR": "editor",

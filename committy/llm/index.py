@@ -1,4 +1,4 @@
-"""LlamaIndex integration for AutoCommit.
+"""LlamaIndex integration for Committy.
 
 This module provides functionality for indexing git diffs and querying
 them via LlamaIndex to generate commit messages.
@@ -10,10 +10,15 @@ from typing import Dict, List, Optional, Any, Union
 from llama_index.core import VectorStoreIndex, Document, Settings
 from llama_index.core.node_parser import SentenceSplitter
 from llama_index.core.schema import IndexNode
+from llama_index.core import Settings
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
 # Configure logger
 logger = logging.getLogger(__name__)
 
+
+# Configure LlamaIndex to use local embeddings
+Settings.embed_model = HuggingFaceEmbedding(model_name="all-MiniLM-L6-v2")
 
 class DiffIndexer:
     """Indexer for git diffs using LlamaIndex."""
@@ -42,7 +47,7 @@ class DiffIndexer:
         Args:
             diff_data: Dict containing git diff information
             
-        Returns:
+        Returns:    
             List of LlamaIndex Document objects
         """
         documents = []
@@ -138,23 +143,25 @@ class DiffIndexer:
         )
 
     def create_index(self, documents: List[Document]) -> VectorStoreIndex:
-        """Create a vector store index from documents.
-        
-        Args:
-            documents: List of Document objects
-            
-        Returns:
-            VectorStoreIndex for querying
-        """
+        """Create a vector store index from documents."""
         # Process documents into nodes
         nodes = self.node_parser.get_nodes_from_documents(documents)
         logger.debug(f"Created {len(nodes)} nodes from {len(documents)} documents")
         
         # Create index
-        index = VectorStoreIndex(nodes)
-        logger.debug("Created vector store index")
-        
-        return index
+        try:
+            index = VectorStoreIndex(nodes)
+            logger.debug("Created vector store index")
+            return index
+        except ValueError as e:
+            # Handle embedding model errors gracefully
+            if "OpenAI" in str(e):
+                logger.error("Error with embedding model: Using local embeddings instead")
+                Settings.embed_model = HuggingFaceEmbedding(model_name="all-MiniLM-L6-v2")
+                # Try again with local embeddings
+                index = VectorStoreIndex(nodes)
+                return index
+            raise
 
     def extract_context(self, index: VectorStoreIndex, max_tokens: int = 4000) -> str:
         """Extract relevant context from the index for commit message generation.

@@ -1,6 +1,6 @@
-# AutoCommit Documentation Standards
+# Committy Documentation Standards
 
-This document outlines the documentation standards for the AutoCommit project to ensure consistency and clarity across all documentation.
+This document outlines the documentation standards for the Committy project to ensure consistency and clarity across all documentation.
 
 ## Code Documentation
 

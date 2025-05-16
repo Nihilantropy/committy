@@ -178,8 +178,8 @@ class TestConfigFunctions:
         """Test getting model config from environment variables."""
         with patch.dict(os.environ, {
             "OLLAMA_MODEL": "phi3:mini",
-            "AUTOCOMMIT_TEMP": "0.7",
-            "AUTOCOMMIT_MAX_TOKENS": "512"
+            "COMMITTY_TEMP": "0.7",
+            "COMMITTY_MAX_TOKENS": "512"
         }):
             config = get_default_model_config()
             assert config["model"] == "phi3:mini"
