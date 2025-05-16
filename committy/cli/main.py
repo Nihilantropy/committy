@@ -487,7 +487,7 @@ def handle_command(parsed_args: Dict[str, Any]) -> int:
             console.print(Panel(syntax))
             
             # Prompt for action
-            action = console.input("\nWhat would you like to do? [C]ommit / [E]dit / [D]iscard: ").strip().lower()
+            action = console.input("\nWhat would you like to do? [C]ommit / [P]ush / [E]dit / [D]iscard: ").strip().lower()
             
             if action in ["c", "commit"]:
                 # Commit the changes
@@ -501,6 +501,30 @@ def handle_command(parsed_args: Dict[str, Any]) -> int:
                     return 0
                 else:
                     console.print("[error]Failed to commit changes[/]")
+                    return 1
+                
+            elif action in ["p", "push"]:
+                # Commit and push the changes
+                with console.status("[info]Committing changes...[/]", spinner="dots") as status:
+                    # Stage all changes and commit
+                    commit_success = engine.commit(result, stage_all=True)
+                    status.stop()
+                
+                if not commit_success:
+                    console.print("[error]Failed to commit changes[/]")
+                    return 1
+                
+                # If commit was successful, push to remote
+                from committy.git.diff import push
+                with console.status("[info]Pushing to remote repository...[/]", spinner="dots") as status:
+                    push_success = push()
+                    status.stop()
+                
+                if push_success:
+                    console.print("[success]Changes committed and pushed successfully![/]")
+                    return 0
+                else:
+                    console.print("[error]Commit successful but push failed[/]")
                     return 1
                 
             elif action in ["e", "edit"]:
@@ -520,7 +544,7 @@ def handle_command(parsed_args: Dict[str, Any]) -> int:
                 return 0
                 
             else:
-                console.print("[warning]Invalid choice. Please enter C, E, or D.[/]")
+                console.print("[warning]Invalid choice. Please enter C, P, E, or D.[/]")
     
     except KeyboardInterrupt:
         console.print("\n[warning]Operation cancelled by user[/]")
