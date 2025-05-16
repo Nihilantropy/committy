@@ -170,6 +170,28 @@ def parse_file_section(section: str) -> Optional[FileChange]:
                 extension=os.path.splitext(file_path)[1]
             )
     
+    # For deleted files, don't include the full diff content
+    if change_type == "deleted":
+        file_ext = os.path.splitext(file_path)[1]
+        language = detect_language(file_path) or "unknown"
+        total_lines = sum(1 for line in lines if line.startswith("-") and not line.startswith("---"))
+        
+        # Include minimal information about the deletion
+        diff_content = f"[File '{file_path}' with {total_lines} lines has been deleted]"
+        
+        logger.info(f"File deletion detected: {file_path} ({total_lines} lines)")
+        
+        return FileChange(
+            path=file_path,
+            change_type="deleted",
+            additions=0,
+            deletions=total_lines,
+            language=language,
+            diff_content=diff_content,
+            extension=file_ext
+        )
+    
+    # For other change types, proceed as normal
     # Count additions and deletions and extract diff content
     additions, deletions = 0, 0
     start_content_idx = -1
