@@ -5,3 +5,17 @@
 3: - enhance input sanitization and validation
 
 4: - refactor some tests to perform better checks and test-cases overall
+
+5: reasoning models have different output generation like this: - "
+<think>
+process...                                                                                                                                                                             <think>                                                                                                                                                                                                               
+brief explaination
+
+```                                                                                                                                                                                     
+commit message
+```                                                                                                                                                                                   
+
+Explaination
+"
+
+Have to address this feat
